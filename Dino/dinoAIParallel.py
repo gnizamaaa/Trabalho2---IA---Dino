@@ -16,22 +16,32 @@ SCREEN_WIDTH = 1100
 if RENDER_GAME:
     SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-RUNNING = [pygame.image.load(os.path.join("Assets/Dino", "DinoRun1.png")),
-           pygame.image.load(os.path.join("Assets/Dino", "DinoRun2.png"))]
+RUNNING = [
+    pygame.image.load(os.path.join("Assets/Dino", "DinoRun1.png")),
+    pygame.image.load(os.path.join("Assets/Dino", "DinoRun2.png")),
+]
 JUMPING = pygame.image.load(os.path.join("Assets/Dino", "DinoJump.png"))
-DUCKING = [pygame.image.load(os.path.join("Assets/Dino", "DinoDuck1.png")),
-           pygame.image.load(os.path.join("Assets/Dino", "DinoDuck2.png"))]
+DUCKING = [
+    pygame.image.load(os.path.join("Assets/Dino", "DinoDuck1.png")),
+    pygame.image.load(os.path.join("Assets/Dino", "DinoDuck2.png")),
+]
 
-SMALL_CACTUS = [pygame.image.load(os.path.join("Assets/Cactus", "SmallCactus1.png")),
-                pygame.image.load(os.path.join("Assets/Cactus", "SmallCactus2.png")),
-                pygame.image.load(os.path.join("Assets/Cactus", "SmallCactus3.png"))]
-LARGE_CACTUS = [pygame.image.load(os.path.join("Assets/Cactus", "LargeCactus1.png")),
-                pygame.image.load(os.path.join("Assets/Cactus", "LargeCactus2.png")),
-                pygame.image.load(os.path.join("Assets/Cactus", "LargeCactus3.png")),
-                pygame.image.load(os.path.join("Assets/Cactus", "LargeCactus4.png"))]
+SMALL_CACTUS = [
+    pygame.image.load(os.path.join("Assets/Cactus", "SmallCactus1.png")),
+    pygame.image.load(os.path.join("Assets/Cactus", "SmallCactus2.png")),
+    pygame.image.load(os.path.join("Assets/Cactus", "SmallCactus3.png")),
+]
+LARGE_CACTUS = [
+    pygame.image.load(os.path.join("Assets/Cactus", "LargeCactus1.png")),
+    pygame.image.load(os.path.join("Assets/Cactus", "LargeCactus2.png")),
+    pygame.image.load(os.path.join("Assets/Cactus", "LargeCactus3.png")),
+    pygame.image.load(os.path.join("Assets/Cactus", "LargeCactus4.png")),
+]
 
-BIRD = [pygame.image.load(os.path.join("Assets/Bird", "Bird1.png")),
-        pygame.image.load(os.path.join("Assets/Bird", "Bird2.png"))]
+BIRD = [
+    pygame.image.load(os.path.join("Assets/Bird", "Bird1.png")),
+    pygame.image.load(os.path.join("Assets/Bird", "Bird2.png")),
+]
 
 CLOUD = pygame.image.load(os.path.join("Assets/Other", "Cloud.png"))
 
@@ -61,7 +71,11 @@ class Dinosaur:
         self.dino_rect = self.image.get_rect()
         self.dino_rect.x = self.X_POS
         self.dino_rect.y = self.Y_POS
-        self.color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        self.color = (
+            random.randint(0, 255),
+            random.randint(0, 255),
+            random.randint(0, 255),
+        )
 
     def update(self, userInput):
         if self.dino_duck and not self.dino_jump:
@@ -120,9 +134,17 @@ class Dinosaur:
 
     def draw(self, SCREEN):
         SCREEN.blit(self.image, (self.dino_rect.x, self.dino_rect.y))
-        pygame.draw.rect(SCREEN, self.color,
-                         (self.dino_rect.x, self.dino_rect.y, self.dino_rect.width, self.dino_rect.height), 2)
-
+        pygame.draw.rect(
+            SCREEN,
+            self.color,
+            (
+                self.dino_rect.x,
+                self.dino_rect.y,
+                self.dino_rect.width,
+                self.dino_rect.height,
+            ),
+            2,
+        )
 
     def getXY(self):
         return (self.dino_rect.x, self.dino_rect.y)
@@ -145,7 +167,7 @@ class Cloud:
         SCREEN.blit(self.image, (self.x, self.y))
 
 
-class Obstacle():
+class Obstacle:
     def __init__(self, image, type):
         super().__init__()
         self.image = image
@@ -156,7 +178,7 @@ class Obstacle():
 
     def update(self):
         self.rect.x -= game_speed
-        if self.rect.x < - self.rect.width:
+        if self.rect.x < -self.rect.width:
             obstacles.pop(0)
 
     def draw(self, SCREEN):
@@ -169,7 +191,7 @@ class Obstacle():
         return y_pos_bg - self.rect.y
 
     def getType(self):
-        return (self.type)
+        return self.type
 
 
 class SmallCactus(Obstacle):
@@ -211,7 +233,16 @@ class KeyClassifier:
     def __init__(self, state):
         pass
 
-    def keySelector(self, distance, obHeight, speed, obType, nextObDistance, nextObHeight, nextObType):
+    def keySelector(
+        self,
+        distance,
+        obHeight,
+        speed,
+        obType,
+        nextObDistance,
+        nextObHeight,
+        nextObType,
+    ):
         pass
 
     def updateState(self, state):
@@ -221,23 +252,26 @@ class KeyClassifier:
 def first(x):
     return x[0]
 
+
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
+
 
 def relu(x):
     return np.maximum(0, x)
 
+
 def fixInput(inputs):
-    
+
     classes = {
         Bird: 1,
         SmallCactus: 2,
         LargeCactus: 3,
         Cloud: 4,
         Dinosaur: 5,
-        Obstacle: 6
+        Obstacle: 6,
     }
-     
+
     for i, inp in enumerate(inputs):
         if i == 3:
             if isinstance(inputs[i], tuple(classes.keys())):
@@ -247,8 +281,9 @@ def fixInput(inputs):
                 inputs[i] = classes[type(inputs[i])]
         else:
             inputs[i] = inp
-            
+
     return inputs
+
 
 class Neuronio:
     def __init__(self, weights, bias, function):
@@ -257,66 +292,116 @@ class Neuronio:
         self.function = function
 
     def forward(self, inputs):
-        inputs = fixInput(inputs)
+        #inputs = fixInput(inputs)
         output = self.function(np.dot(self.weights, inputs) + self.bias)
         return output
-    
+
     def setWeights(self, weights):
         self.weights = weights
-        
+
+
 class CamadaNeuronio:
     def __init__(self, neuronios):
         self.neuronios = neuronios
         self.size = len(neuronios)
-        
+
     def forward(self, inputs):
         inputs = inputs
         outputs = [neuronio.forward(inputs) for neuronio in self.neuronios]
         return outputs
-    
+
     def setWeights(self, weights):
         for i, neuronio in enumerate(self.neuronios):
             neuronio.setWeights(weights[i])
-            
+
+
 class NeuralNetwork(KeyClassifier):
     def __init__(self, state):
         self.state = state
-        #self.weights = [random.random() for i in range(31)]
-        self.weights = state #Acho que posso usar states como pesos
-        self.bias = 1 #random.random()
+        # self.weights = [random.random() for i in range(31)]
+        self.weights = state  # Acho que posso usar states como pesos
+        self.bias = 1  # random.random()
+
+        # Não tem peso pq eh a camada de entrada
+        self.camada1 = CamadaNeuronio([Neuronio([1] * 7, self.bias, relu)] * 7)
+        # Camada intermediaria com os pesos certinho
+        self.camada2 = CamadaNeuronio(
+            [
+                Neuronio(self.weights[:7], self.bias, relu),
+                Neuronio(self.weights[7:14], self.bias, relu),
+                Neuronio(self.weights[14:21], self.bias, relu),
+                Neuronio(self.weights[21:28], self.bias, relu),
+            ]
+        )
+        # Camada de saida com seu peso
+        self.camada3 = CamadaNeuronio(
+            [Neuronio(self.weights[28:32], self.bias, sigmoid)]
+        )
+
+    def keySelector(
+        self,
+        distance,
+        obHeight,
+        speed,
+        obType,
+        nextObDistance,
+        nextObHeight,
+        nextObType,
+    ):
+        inputs = [
+            distance,
+            obHeight,
+            speed,
+            obType,
+            nextObDistance,
+            nextObHeight,
+            nextObType,
+        ]
         
-        #Não tem peso pq eh a camada de entrada
-        self.camada1 = CamadaNeuronio([Neuronio([1]*7, self.bias, relu)]*7)
-        #Camada intermediaria com os pesos certinho
-        self.camada2 = CamadaNeuronio([Neuronio(self.weights[:7], self.bias, relu),
-                                       Neuronio(self.weights[7:14], self.bias, relu),
-                                       Neuronio(self.weights[14:21], self.bias, relu),
-                                       Neuronio(self.weights[21:28], self.bias, relu)])
-        #Camada de saida com seu peso
-        self.camada3 = CamadaNeuronio([Neuronio(self.weights[28:32], self.bias, sigmoid)])
-        
-    def keySelector(self, distance, obHeight, speed, obType, nextObDistance, nextObHeight, nextObType):
-        inputs = [distance, obHeight, speed, obType, nextObDistance, nextObHeight, nextObType]
+        inputs = fixInput(inputs)
+        inputs = [float(i) / sum(inputs) for i in inputs]
         ret1 = self.camada1.forward(inputs)
+        ret1 = [float(i) / sum(ret1) for i in ret1]
         ret2 = self.camada2.forward(ret1)
+        ret2 = [float(i) / sum(ret2) for i in ret2]
+
         return "K_UP" if self.camada3.forward(ret2)[0] > 0.55 else "K_DOWN"
-    
+
     def updateState(self, state):
         self.state = state
         self.weights = state
-        self.camada2.setWeights([self.weights[:6], self.weights[6:13], self.weights[13:20], self.weights[20:27]])
+        self.camada2.setWeights(
+            [
+                self.weights[:6],
+                self.weights[6:13],
+                self.weights[13:20],
+                self.weights[20:27],
+            ]
+        )
         self.camada3.setWeights([self.weights[27:31]])
-    
+
     def setWeights(self, weights):
         self.weights = weights
-        self.camada2.setWeights([weights[:6], weights[6:13], weights[13:20], weights[20:27]])
+        self.camada2.setWeights(
+            [weights[:6], weights[6:13], weights[13:20], weights[20:27]]
+        )
         self.camada3.setWeights([weights[27:31]])
+
 
 class KeySimplestClassifier(KeyClassifier):
     def __init__(self, state):
         self.state = state
 
-    def keySelector(self, distance, obHeight, speed, obType, nextObDistance, nextObHeight,nextObType):
+    def keySelector(
+        self,
+        distance,
+        obHeight,
+        speed,
+        obType,
+        nextObDistance,
+        nextObHeight,
+        nextObType,
+    ):
         self.state = sorted(self.state, key=first)
         for s, d in self.state:
             if speed < s:
@@ -350,7 +435,7 @@ def playGame(solutions):
 
     clock = pygame.time.Clock()
     cloud = Cloud()
-    font = pygame.font.Font('freesansbold.ttf', 20)
+    font = pygame.font.Font("freesansbold.ttf", 20)
 
     players = []
     players_classifier = []
@@ -384,7 +469,6 @@ def playGame(solutions):
             textRect.center = (1000, 40)
             SCREEN.blit(text, textRect)
 
-
     def background():
         global x_pos_bg, y_pos_bg
         image_width = BG.get_width()
@@ -396,8 +480,10 @@ def playGame(solutions):
         x_pos_bg -= game_speed
 
     def statistics():
-        text_1 = font.render(f'Dinosaurs Alive:  {str(died.count(False))}', True, (0, 0, 0))
-        text_3 = font.render(f'Game Speed:  {str(game_speed)}', True, (0, 0, 0))
+        text_1 = font.render(
+            f"Dinosaurs Alive:  {str(died.count(False))}", True, (0, 0, 0)
+        )
+        text_3 = font.render(f"Game Speed:  {str(game_speed)}", True, (0, 0, 0))
 
         SCREEN.blit(text_1, (50, 450))
         SCREEN.blit(text_3, (50, 480))
@@ -411,7 +497,7 @@ def playGame(solutions):
         if RENDER_GAME:
             SCREEN.fill((255, 255, 255))
 
-        for i,player in enumerate(players):
+        for i, player in enumerate(players):
             if not died[i]:
                 distance = 1500
                 nextObDistance = 2000
@@ -431,7 +517,15 @@ def playGame(solutions):
                     nextObHeight = obstacles[1].getHeight()
                     nextObType = obstacles[1]
 
-                userInput = players_classifier[i].keySelector(distance, obHeight, game_speed, obType, nextObDistance, nextObHeight,nextObType)
+                userInput = players_classifier[i].keySelector(
+                    distance,
+                    obHeight,
+                    game_speed,
+                    obType,
+                    nextObDistance,
+                    nextObHeight,
+                    nextObType,
+                )
 
                 player.update(userInput)
 
@@ -451,7 +545,6 @@ def playGame(solutions):
             obstacle.update()
             if RENDER_GAME:
                 obstacle.draw(SCREEN)
-
 
         if RENDER_GAME:
             background()
@@ -483,7 +576,7 @@ def change_state(state, position, vs, vd):
     nd = d + vd
     if ns < 15 or nd > 1000:
         return []
-    return aux[:position] + [(ns, nd)] + aux[position + 1:]
+    return aux[:position] + [(ns, nd)] + aux[position + 1 :]
 
 
 # Neighborhood
@@ -493,8 +586,12 @@ def generate_neighborhood(state):
     for i in range(state_size):
         ds = random.randint(1, 10)
         dd = random.randint(1, 100)
-        new_states = [change_state(state, i, ds, 0), change_state(state, i, (-ds), 0), change_state(state, i, 0, dd),
-                      change_state(state, i, 0, (-dd))]
+        new_states = [
+            change_state(state, i, ds, 0),
+            change_state(state, i, (-ds), 0),
+            change_state(state, i, 0, dd),
+            change_state(state, i, 0, (-dd)),
+        ]
         for s in new_states:
             if s != []:
                 neighborhood.append(s)
@@ -513,12 +610,12 @@ def gradient_ascent(state, max_time):
         better = False
 
         results = playGame(neighborhood)
-        for i,value in enumerate(results):
+        for i, value in enumerate(results):
             if value > max_value:
                 state = neighborhood[i]
                 max_value = value
                 better = True
-        '''
+        """
         for s in neighborhood:
             aiPlayer = KeySimplestClassifier(s)
             res, value = manyPlaysResults(3)
@@ -526,15 +623,133 @@ def gradient_ascent(state, max_time):
                 state = s
                 max_value = value
                 better = True
-        '''
+        """
         end = time.process_time()
     return state, max_value
 
 
-from scipy import stats
 import numpy as np
 
-def manyPlaysResultsTrain(rounds,solutions):
+def gerarPopulacao(tamPopulacao):
+    # populacao = []
+    # for i in range(tamPopulacao):
+    #     individuo = []
+    #     for j in range(32):
+    #         #individuo.append(random.random())
+    #         individuo.append(np.random.normal())
+    #     populacao.append(individuo)
+    #return populacao
+    return [np.random.uniform(-10, 10, 32).tolist() for _ in range(tamPopulacao)]
+
+
+
+def crossover(individuo1, individuo2):
+    filho = []
+    for i in range(len(individuo1)):
+        if random.random() < 0.5:
+            filho.append(individuo1[i])
+        else:
+            filho.append(individuo2[i])
+    return filho
+
+
+def mutacao(individuo, taxaMutacao):
+    for i in range(len(individuo)):
+        if random.random() < taxaMutacao:
+            #individuo[i] = random.random()
+            individuo[i] = np.random.normal()
+    return individuo
+
+
+def selecao(populacao, fitness):
+    soma = sum(fitness)
+    prob = [f / soma for f in fitness]
+    pai1 = random.choices(populacao, prob)[0]
+    pai2 = random.choices(populacao, prob)[0]
+    return pai1, pai2
+
+
+def torneio_selecao(populacao, fitness, num_selecionados, tamanho_torneio=3):
+    """
+    Realiza a seleção por torneio.
+
+    Args:
+    populacao (list): Lista de indivíduos na população.
+    fitness (function): Função que calcula o fitness de um indivíduo.
+    tamanho_torneio (int): Quantidade de indivíduos em cada torneio. (Default: 3)
+
+    Returns:
+    list: Lista de indivíduos selecionados.
+    """
+    selecionados = []
+    for _ in range(num_selecionados):
+        torneio = random.sample(list(zip(populacao, fitness)), tamanho_torneio)
+        melhor = max(torneio, key=lambda x: x[1])[0]
+        selecionados.append(melhor)
+    return selecionados
+
+
+def elitismo(populacao, fitness, numElitismo):
+    """
+    Seleciona os melhores indivíduos da população baseado no fitness.
+
+    Args:
+    populacao (list): Lista de indivíduos na população.
+    fitness (list): Lista de valores de fitness correspondentes aos indivíduos.
+    numElitismo (int): Número de indivíduos a serem selecionados pelo elitismo.
+
+    Returns:
+    list: Lista dos melhores indivíduos.
+    """
+
+    populacao = [
+        x
+        for _, x in sorted(
+            zip(fitness, populacao), key=lambda pair: pair[0], reverse=True
+        )
+    ]
+    return populacao[:numElitismo]
+
+
+def evolucao(populacao, fitness, taxaMutacao):
+    novaPopulacao = []
+    # Estudar a possibilidade de elitismo
+    novaPopulacao += elitismo(populacao, fitness, len(populacao) // 10)
+
+    for i in range(len(populacao) - len(novaPopulacao)):
+        # Selecionar os mais aptos
+        pai1, pai2 = torneio_selecao(populacao, fitness, 2)
+
+        filho = crossover(pai1, pai2)
+        filho = mutacao(filho, taxaMutacao)
+        # # Gerar novos atraves de crossover e mutacao
+        # if random.random() < 0.6:
+        #     filho = crossover(pai1, pai2)
+        # else:
+        #     filho = pai1
+        
+        # if random.random() < 0.1:
+        #     filho = mutacao(filho, taxaMutacao)
+        
+        novaPopulacao.append(filho)
+    return novaPopulacao
+
+
+def geneticAlgorithm(tamPopulacao, numGeracoes, taxaMutacao):
+    populacao = gerarPopulacao(tamPopulacao)
+    print(populacao)
+    for i in range(numGeracoes):
+        fitness = manyPlaysResultsTrain(3, populacao)
+        print(fitness)
+        populacao = evolucao(populacao, fitness, taxaMutacao)
+        #print(populacao)
+    return populacao
+
+
+from scipy import stats
+
+
+def manyPlaysResultsTrain(rounds, solutions):
     results = []
 
     for round in range(rounds):
@@ -542,11 +757,13 @@ def manyPlaysResultsTrain(rounds,solutions):
 
     npResults = np.asarray(results)
 
-    mean_results = np.mean(npResults,axis = 0) - np.std(npResults,axis=0) # axis 0 calcula media da coluna
+    mean_results = np.mean(npResults, axis=0) - np.std(
+        npResults, axis=0
+    )  # axis 0 calcula media da coluna
     return mean_results
 
 
-def manyPlaysResultsTest(rounds,best_solution):
+def manyPlaysResultsTest(rounds, best_solution):
     results = []
     for round in range(rounds):
         results += [playGame([best_solution])[0]]
@@ -557,13 +774,16 @@ def manyPlaysResultsTest(rounds,best_solution):
 
 def main():
 
-    print(playGame([[random.random() for i in range(32)]]))
-    initial_state = [(15, 250), (18, 350), (20, 450), (1000, 550)]
-    #best_state, best_value = gradient_ascent(initial_state, 5000)
-    
-    #res, value = manyPlaysResultsTest(30, best_state)
-    #npRes = np.asarray(res)
-    #print(res, npRes.mean(), npRes.std(), value)
+    teste = geneticAlgorithm(100, 1000, 0.2)
+    print(teste)
+    print(playGame(teste))
+    # print(playGame([[random.random() for i in range(32)]]))
+    # initial_state = [(15, 250), (18, 350), (20, 450), (1000, 550)]
+    # best_state, best_value = gradient_ascent(initial_state, 5000)
+
+    # res, value = manyPlaysResultsTest(30, best_state)
+    # npRes = np.asarray(res)
+    # print(res, npRes.mean(), npRes.std(), value)
 
 
 main()
