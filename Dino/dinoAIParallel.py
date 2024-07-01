@@ -323,6 +323,7 @@ class NeuralNetwork:
         self.bias = 0
 
         # Inicializando pesos diferentes para cada neurônio faz com que ele consiga pular e descer
+        # Tenho que perguntar p o prof o que fazer aqui, isso deveria ser controlado pelo alg genetico
         self.camada1 = CamadaNeuronio(
             [Neuronio(np.random.rand(7), self.bias, relu) for _ in range(7)]
         )
