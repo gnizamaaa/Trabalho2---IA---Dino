@@ -8,7 +8,7 @@ pygame.init()
 
 # Valid values: HUMAN_MODE or AI_MODE
 GAME_MODE = "AI_MODE"
-RENDER_GAME = False
+RENDER_GAME = True
 
 # Global Constants
 SCREEN_HEIGHT = 600
@@ -282,31 +282,31 @@ def fixInput(inputs):
         else:
             inputs[i] = inp
 
+    # inputs = np.array(inputs) / (np.sum(inputs) + 1e-9)
     return inputs
 
 
+# Classe Neuronio
 class Neuronio:
     def __init__(self, weights, bias, function):
-        self.weights = weights
+        self.weights = np.array(weights)
         self.bias = bias
         self.function = function
 
     def forward(self, inputs):
-        #inputs = fixInput(inputs)
         output = self.function(np.dot(self.weights, inputs) + self.bias)
         return output
 
     def setWeights(self, weights):
-        self.weights = weights
+        self.weights = np.array(weights)
 
 
+# Classe CamadaNeuronio
 class CamadaNeuronio:
     def __init__(self, neuronios):
         self.neuronios = neuronios
-        self.size = len(neuronios)
 
     def forward(self, inputs):
-        inputs = inputs
         outputs = [neuronio.forward(inputs) for neuronio in self.neuronios]
         return outputs
 
@@ -315,16 +315,22 @@ class CamadaNeuronio:
             neuronio.setWeights(weights[i])
 
 
-class NeuralNetwork(KeyClassifier):
+# Classe NeuralNetwork
+class NeuralNetwork:
     def __init__(self, state):
         self.state = state
-        # self.weights = [random.random() for i in range(31)]
-        self.weights = state  # Acho que posso usar states como pesos
-        self.bias = 1  # random.random()
+        self.weights = state
+        self.bias = 0
 
-        # Não tem peso pq eh a camada de entrada
-        self.camada1 = CamadaNeuronio([Neuronio([1] * 7, self.bias, relu)] * 7)
-        # Camada intermediaria com os pesos certinho
+        # Inicializando pesos diferentes para cada neurônio faz com que ele consiga pular e descer
+        self.camada1 = CamadaNeuronio(
+            [Neuronio(np.random.rand(7), self.bias, relu) for _ in range(7)]
+        )
+        
+        #Esse daqui faz o resultado ser fixo, perguntar o que fazer
+        # self.camada1 = CamadaNeuronio(
+        #     [Neuronio([1]*7, self.bias, relu) for _ in range(7)]
+        # )
         self.camada2 = CamadaNeuronio(
             [
                 Neuronio(self.weights[:7], self.bias, relu),
@@ -333,7 +339,6 @@ class NeuralNetwork(KeyClassifier):
                 Neuronio(self.weights[21:28], self.bias, relu),
             ]
         )
-        # Camada de saida com seu peso
         self.camada3 = CamadaNeuronio(
             [Neuronio(self.weights[28:32], self.bias, sigmoid)]
         )
@@ -357,35 +362,40 @@ class NeuralNetwork(KeyClassifier):
             nextObHeight,
             nextObType,
         ]
-        
-        inputs = fixInput(inputs)
-        inputs = [float(i) / sum(inputs) for i in inputs]
-        ret1 = self.camada1.forward(inputs)
-        ret1 = [float(i) / sum(ret1) for i in ret1]
-        ret2 = self.camada2.forward(ret1)
-        ret2 = [float(i) / sum(ret2) for i in ret2]
 
-        return "K_UP" if self.camada3.forward(ret2)[0] > 0.55 else "K_DOWN"
+        inputs = fixInput(inputs)
+        # print(inputs)
+        # print("\n")
+        ret1 = self.camada1.forward(inputs)
+        # print(ret1)
+        # print("\n")
+        ret2 = self.camada2.forward(ret1)
+        # print(ret2)
+        # print("\n")
+        output = self.camada3.forward(ret2)
+        # print(output)
+        # print("\n")
+        return "K_UP" if output[0] > 0.55 else "K_DOWN"
 
     def updateState(self, state):
         self.state = state
         self.weights = state
         self.camada2.setWeights(
             [
-                self.weights[:6],
-                self.weights[6:13],
-                self.weights[13:20],
-                self.weights[20:27],
+                self.weights[:7],
+                self.weights[7:14],
+                self.weights[14:21],
+                self.weights[21:28],
             ]
         )
-        self.camada3.setWeights([self.weights[27:31]])
+        self.camada3.setWeights([self.weights[28:32]])
 
     def setWeights(self, weights):
         self.weights = weights
         self.camada2.setWeights(
-            [weights[:6], weights[6:13], weights[13:20], weights[20:27]]
+            [weights[:7], weights[7:14], weights[14:21], weights[21:28]]
         )
-        self.camada3.setWeights([weights[27:31]])
+        self.camada3.setWeights([weights[28:32]])
 
 
 class KeySimplestClassifier(KeyClassifier):
@@ -630,6 +640,7 @@ def gradient_ascent(state, max_time):
 
 import numpy as np
 
+
 def gerarPopulacao(tamPopulacao):
     # populacao = []
     # for i in range(tamPopulacao):
@@ -638,9 +649,8 @@ def gerarPopulacao(tamPopulacao):
     #         #individuo.append(random.random())
     #         individuo.append(np.random.normal())
     #     populacao.append(individuo)
-    #return populacao
+    # return populacao
     return [np.random.uniform(-10, 10, 32).tolist() for _ in range(tamPopulacao)]
-
 
 
 def crossover(individuo1, individuo2):
@@ -656,9 +666,30 @@ def crossover(individuo1, individuo2):
 def mutacao(individuo, taxaMutacao):
     for i in range(len(individuo)):
         if random.random() < taxaMutacao:
-            #individuo[i] = random.random()
+            # individuo[i] = random.random()
             individuo[i] = np.random.normal()
+            individuo[i] = np.random.uniform(-10, 10)
     return individuo
+
+
+# def mutate(individual, mutation_rate):
+
+#     for i in range(len(individual)):
+#         # Apply mutation with probability 'mutation_rate'
+#         if random.random() < mutation_rate:
+#             # Randomly modify the weight value
+#             individual[i] += random.uniform(-0.5, 0.5)
+
+#     return individual
+
+# def crossover(parent1, parent2):
+#     # Single-point crossover
+#     crossover_point = random.randint(1, len(parent1) - 1)
+
+#     child1 = parent1[:crossover_point] + parent2[crossover_point:]
+#     child2 = parent2[:crossover_point] + parent1[crossover_point:]
+
+#     return child1, child2
 
 
 def selecao(populacao, fitness):
@@ -714,9 +745,9 @@ def elitismo(populacao, fitness, numElitismo):
 def evolucao(populacao, fitness, taxaMutacao):
     novaPopulacao = []
     # Estudar a possibilidade de elitismo
-    novaPopulacao += elitismo(populacao, fitness, len(populacao) // 10)
+    novaPopulacao += elitismo(populacao, fitness, 2)
 
-    for i in range(len(populacao) - len(novaPopulacao)):
+    for i in range((int(len(populacao) * 0.9)) - len(novaPopulacao)):
         # Selecionar os mais aptos
         pai1, pai2 = torneio_selecao(populacao, fitness, 2)
 
@@ -727,22 +758,25 @@ def evolucao(populacao, fitness, taxaMutacao):
         #     filho = crossover(pai1, pai2)
         # else:
         #     filho = pai1
-        
+
         # if random.random() < 0.1:
         #     filho = mutacao(filho, taxaMutacao)
-        
+
         novaPopulacao.append(filho)
+
+    while len(novaPopulacao) < len(populacao):
+        novaPopulacao.append(np.random.uniform(-10, 10, 32).tolist())
     return novaPopulacao
 
 
 def geneticAlgorithm(tamPopulacao, numGeracoes, taxaMutacao):
     populacao = gerarPopulacao(tamPopulacao)
-    print(populacao)
+    # print(populacao)
     for i in range(numGeracoes):
         fitness = manyPlaysResultsTrain(3, populacao)
         print(fitness)
         populacao = evolucao(populacao, fitness, taxaMutacao)
-        #print(populacao)
+        # print(populacao)
     return populacao
 
 
@@ -774,7 +808,7 @@ def manyPlaysResultsTest(rounds, best_solution):
 
 def main():
 
-    teste = geneticAlgorithm(100, 1000, 0.2)
+    teste = geneticAlgorithm(100, 1000, 0.3)
     print(teste)
     print(playGame(teste))
     # print(playGame([[random.random() for i in range(32)]]))
