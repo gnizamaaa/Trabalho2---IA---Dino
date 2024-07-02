@@ -8,7 +8,7 @@ pygame.init()
 
 # Valid values: HUMAN_MODE or AI_MODE
 GAME_MODE = "AI_MODE"
-RENDER_GAME = True
+RENDER_GAME = False
 
 # Global Constants
 SCREEN_HEIGHT = 600
@@ -324,9 +324,9 @@ class NeuralNetwork:
 
         # Inicializando pesos diferentes para cada neurônio faz com que ele consiga pular e descer
         # Tenho que perguntar p o prof o que fazer aqui, isso deveria ser controlado pelo alg genetico
-        self.camada1 = CamadaNeuronio(
-            [Neuronio(np.random.rand(7), self.bias, relu) for _ in range(7)]
-        )
+        #self.camada1 = CamadaNeuronio(
+        #    [Neuronio(np.random.rand(7), self.bias, relu) for _ in range(7)]
+        #)
         
         #Esse daqui faz o resultado ser fixo, perguntar o que fazer
         # self.camada1 = CamadaNeuronio(
@@ -367,10 +367,10 @@ class NeuralNetwork:
         inputs = fixInput(inputs)
         # print(inputs)
         # print("\n")
-        ret1 = self.camada1.forward(inputs)
+        #ret1 = self.camada1.forward(inputs)
         # print(ret1)
         # print("\n")
-        ret2 = self.camada2.forward(ret1)
+        ret2 = self.camada2.forward(inputs)
         # print(ret2)
         # print("\n")
         output = self.camada3.forward(ret2)
@@ -651,7 +651,7 @@ def gerarPopulacao(tamPopulacao):
     #         individuo.append(np.random.normal())
     #     populacao.append(individuo)
     # return populacao
-    return [np.random.uniform(-10, 10, 32).tolist() for _ in range(tamPopulacao)]
+    return [np.random.uniform(-1, 1, 32).tolist() for _ in range(tamPopulacao)]
 
 
 def crossover(individuo1, individuo2):
@@ -669,7 +669,7 @@ def mutacao(individuo, taxaMutacao):
         if random.random() < taxaMutacao:
             # individuo[i] = random.random()
             individuo[i] = np.random.normal()
-            individuo[i] = np.random.uniform(-10, 10)
+            individuo[i] = np.random.uniform(-1, 1)
     return individuo
 
 
@@ -765,8 +765,9 @@ def evolucao(populacao, fitness, taxaMutacao):
 
         novaPopulacao.append(filho)
 
+    # Completar a população com indivíduos aleatórios  (Mais uma tentativa de aumentar a diversidade da população)
     while len(novaPopulacao) < len(populacao):
-        novaPopulacao.append(np.random.uniform(-10, 10, 32).tolist())
+        novaPopulacao.append(np.random.uniform(-1, 1, 32).tolist())
     return novaPopulacao
 
 
@@ -775,7 +776,7 @@ def geneticAlgorithm(tamPopulacao, numGeracoes, taxaMutacao):
     # print(populacao)
     for i in range(numGeracoes):
         fitness = manyPlaysResultsTrain(3, populacao)
-        print(fitness)
+        print(max(fitness))
         populacao = evolucao(populacao, fitness, taxaMutacao)
         # print(populacao)
     return populacao
@@ -809,8 +810,10 @@ def manyPlaysResultsTest(rounds, best_solution):
 
 def main():
 
-    teste = geneticAlgorithm(100, 1000, 0.3)
+    teste = geneticAlgorithm(100, 1000, 0.1)
     print(teste)
+
+    RENDER_GAME = False
     print(playGame(teste))
     # print(playGame([[random.random() for i in range(32)]]))
     # initial_state = [(15, 250), (18, 350), (20, 450), (1000, 550)]
