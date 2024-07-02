@@ -1,3 +1,4 @@
+from statistics import mean
 import pygame
 import os
 import random
@@ -8,7 +9,7 @@ pygame.init()
 
 # Valid values: HUMAN_MODE or AI_MODE
 GAME_MODE = "AI_MODE"
-RENDER_GAME = False
+RENDER_GAME = True
 
 # Global Constants
 SCREEN_HEIGHT = 600
@@ -282,7 +283,7 @@ def fixInput(inputs):
         else:
             inputs[i] = inp
 
-    # inputs = np.array(inputs) / (np.sum(inputs) + 1e-9)
+    inputs = np.array(inputs) / (np.sum(inputs) + 1e-9)
     return inputs
 
 
@@ -322,17 +323,7 @@ class NeuralNetwork:
         self.weights = state
         self.bias = 0
 
-        # Inicializando pesos diferentes para cada neurônio faz com que ele consiga pular e descer
-        # Tenho que perguntar p o prof o que fazer aqui, isso deveria ser controlado pelo alg genetico
-        #self.camada1 = CamadaNeuronio(
-        #    [Neuronio(np.random.rand(7), self.bias, relu) for _ in range(7)]
-        #)
-        
-        #Esse daqui faz o resultado ser fixo, perguntar o que fazer
-        # self.camada1 = CamadaNeuronio(
-        #     [Neuronio([1]*7, self.bias, relu) for _ in range(7)]
-        # )
-        self.camada2 = CamadaNeuronio(
+        self.camada1 = CamadaNeuronio(
             [
                 Neuronio(self.weights[:7], self.bias, relu),
                 Neuronio(self.weights[7:14], self.bias, relu),
@@ -340,7 +331,7 @@ class NeuralNetwork:
                 Neuronio(self.weights[21:28], self.bias, relu),
             ]
         )
-        self.camada3 = CamadaNeuronio(
+        self.camada2 = CamadaNeuronio(
             [Neuronio(self.weights[28:32], self.bias, sigmoid)]
         )
 
@@ -365,23 +356,14 @@ class NeuralNetwork:
         ]
 
         inputs = fixInput(inputs)
-        # print(inputs)
-        # print("\n")
-        #ret1 = self.camada1.forward(inputs)
-        # print(ret1)
-        # print("\n")
-        ret2 = self.camada2.forward(inputs)
-        # print(ret2)
-        # print("\n")
-        output = self.camada3.forward(ret2)
-        # print(output)
-        # print("\n")
-        return "K_UP" if output[0] > 0.55 else "K_DOWN"
+        res1 = self.camada1.forward(inputs)
+        res2 = self.camada2.forward(res1)
+        return "K_UP" if res2[0] > 0.55 else "K_DOWN"
 
     def updateState(self, state):
         self.state = state
         self.weights = state
-        self.camada2.setWeights(
+        self.camada1.setWeights(
             [
                 self.weights[:7],
                 self.weights[7:14],
@@ -389,14 +371,14 @@ class NeuralNetwork:
                 self.weights[21:28],
             ]
         )
-        self.camada3.setWeights([self.weights[28:32]])
+        self.camada2.setWeights([self.weights[28:32]])
 
     def setWeights(self, weights):
         self.weights = weights
-        self.camada2.setWeights(
+        self.camada1.setWeights(
             [weights[:7], weights[7:14], weights[14:21], weights[21:28]]
         )
-        self.camada3.setWeights([weights[28:32]])
+        self.camada2.setWeights([weights[28:32]])
 
 
 class KeySimplestClassifier(KeyClassifier):
@@ -643,24 +625,29 @@ import numpy as np
 
 
 def gerarPopulacao(tamPopulacao):
-    # populacao = []
-    # for i in range(tamPopulacao):
-    #     individuo = []
-    #     for j in range(32):
-    #         #individuo.append(random.random())
-    #         individuo.append(np.random.normal())
-    #     populacao.append(individuo)
-    # return populacao
     return [np.random.uniform(-1, 1, 32).tolist() for _ in range(tamPopulacao)]
 
 
-def crossover(individuo1, individuo2):
+def crossover(individuo1, individuo2, taxaCrossOver=0.6):
     filho = []
     for i in range(len(individuo1)):
-        if random.random() < 0.5:
+        if random.random() < 0.6:
             filho.append(individuo1[i])
         else:
             filho.append(individuo2[i])
+    return filho
+
+
+def single_point_crossover(individuo1, individuo2):
+    ponto = random.randint(0, len(individuo1) - 1)
+    filho = individuo1[:ponto] + individuo2[ponto:]
+    return filho
+
+
+def two_point_crossover(individuo1, individuo2):
+    ponto1 = random.randint(0, len(individuo1))
+    ponto2 = random.randint(ponto1, len(individuo1))
+    filho = individuo1[:ponto1] + individuo2[ponto1:ponto2] + individuo1[ponto2:]
     return filho
 
 
@@ -668,57 +655,8 @@ def mutacao(individuo, taxaMutacao):
     for i in range(len(individuo)):
         if random.random() < taxaMutacao:
             # individuo[i] = random.random()
-            individuo[i] = np.random.normal()
             individuo[i] = np.random.uniform(-1, 1)
     return individuo
-
-
-# def mutate(individual, mutation_rate):
-
-#     for i in range(len(individual)):
-#         # Apply mutation with probability 'mutation_rate'
-#         if random.random() < mutation_rate:
-#             # Randomly modify the weight value
-#             individual[i] += random.uniform(-0.5, 0.5)
-
-#     return individual
-
-# def crossover(parent1, parent2):
-#     # Single-point crossover
-#     crossover_point = random.randint(1, len(parent1) - 1)
-
-#     child1 = parent1[:crossover_point] + parent2[crossover_point:]
-#     child2 = parent2[:crossover_point] + parent1[crossover_point:]
-
-#     return child1, child2
-
-
-def selecao(populacao, fitness):
-    soma = sum(fitness)
-    prob = [f / soma for f in fitness]
-    pai1 = random.choices(populacao, prob)[0]
-    pai2 = random.choices(populacao, prob)[0]
-    return pai1, pai2
-
-
-def torneio_selecao(populacao, fitness, num_selecionados, tamanho_torneio=3):
-    """
-    Realiza a seleção por torneio.
-
-    Args:
-    populacao (list): Lista de indivíduos na população.
-    fitness (function): Função que calcula o fitness de um indivíduo.
-    tamanho_torneio (int): Quantidade de indivíduos em cada torneio. (Default: 3)
-
-    Returns:
-    list: Lista de indivíduos selecionados.
-    """
-    selecionados = []
-    for _ in range(num_selecionados):
-        torneio = random.sample(list(zip(populacao, fitness)), tamanho_torneio)
-        melhor = max(torneio, key=lambda x: x[1])[0]
-        selecionados.append(melhor)
-    return selecionados
 
 
 def elitismo(populacao, fitness, numElitismo):
@@ -743,25 +681,140 @@ def elitismo(populacao, fitness, numElitismo):
     return populacao[:numElitismo]
 
 
-def evolucao(populacao, fitness, taxaMutacao):
+def selecao(populacao, fitness):
+    soma = sum(fitness)
+    prob = [f / soma for f in fitness]
+    pai1 = random.choices(populacao, prob)[0]
+    pai2 = random.choices(populacao, prob)[0]
+    return pai1, pai2
+
+
+def torneio_selecao(populacao, fitness, num_selecionados, tamanho_torneio=4):
+    """
+    Realiza a seleção por torneio.
+
+    Args:
+    populacao (list): Lista de indivíduos na população.
+    fitness (function): Função que calcula o fitness de um indivíduo.
+    tamanho_torneio (int): Quantidade de indivíduos em cada torneio. (Default: 3)
+
+    Returns:
+    list: Lista de indivíduos selecionados.
+    """
+    selecionados = []
+    for _ in range(num_selecionados):
+        torneio = random.sample(list(zip(populacao, fitness)), tamanho_torneio)
+        melhor = max(torneio, key=lambda x: x[1])[0]
+        selecionados.append(melhor)
+
+    return selecionados
+
+
+# Teve alguma melhora
+def rank_selecao(populacao, fitness, num_selecionados):
+    """
+    Realiza a seleção por rank.
+
+    Args:
+    populacao (list): Lista de indivíduos na população.
+    fitness (function): Função que calcula o fitness de um indivíduo.
+
+    Returns:
+    list: Lista de indivíduos selecionados.
+    """
+    selecionados = []
+    rank = [x for _, x in sorted(zip(fitness, populacao), key=lambda pair: pair[0])]
+    for i in range(num_selecionados):
+        selecionados.append(rank[i])
+    return selecionados
+
+
+#  Aparentemente bem pior
+def random_selecao(populacao, fitness, num_selecionados):
+    """
+    Realiza a seleção por rank.
+
+    Args:
+    populacao (list): Lista de indivíduos na população.
+    fitness (function): Função que calcula o fitness de um indivíduo.
+
+    Returns:
+    list: Lista de indivíduos selecionados.
+    """
+    selecionados = []
+    rank = [x for _, x in sorted(zip(fitness, populacao), key=lambda pair: pair[0])]
+    for i in range(num_selecionados):
+        selecionados.append(random.choice(rank))
+    return selecionados
+
+
+# Bom também, talvez em par com o rank
+def roulette_wheel_selection(populacao, fitness, num_selecionados):
+    """
+    Realiza a seleção por roleta.
+
+    Args:
+    populacao (list): Lista de indivíduos na população.
+    fitness (function): Função que calcula o fitness de um indivíduo.
+
+    Returns:
+    list: Lista de indivíduos selecionados.
+    """
+    selecionados = []
+    soma = sum(fitness)
+    prob = [f / soma for f in fitness]
+    for _ in range(num_selecionados):
+        pai = random.choices(populacao, prob)[0]
+        selecionados.append(pai)
+    return selecionados
+
+
+# Não consegui fazer funcionar ainda
+def stochastic_universal_sampling(populacao, fitness, num_selecionados):
+    """
+    Realiza a seleção por amostragem estocástica universal.
+
+    Args:
+    populacao (list): Lista de indivíduos na população.
+    fitness (function): Função que calcula o fitness de um indivíduo.
+
+    Returns:
+    list: Lista de indivíduos selecionados.
+    """
+    selecionados = []
+    soma = sum(fitness)
+    prob = [f / soma for f in fitness]
+    r = random.random()
+    acumulado = 0
+    i = 0
+    for _ in range(num_selecionados):
+        while r < (acumulado + prob[i]):
+            selecionados.append(populacao[i])
+            r += 1 / num_selecionados
+        acumulado += prob[i]
+        i += 1
+    return selecionados
+
+
+def evolucao(populacao, fitness, taxaCrossOver=0.5, taxaMutacao=0.1, taxaElitismo=0.05):
     novaPopulacao = []
     # Estudar a possibilidade de elitismo
-    novaPopulacao += elitismo(populacao, fitness, 2)
+    novaPopulacao += elitismo(populacao, fitness, int(len(populacao) * taxaElitismo))
 
-    for i in range((int(len(populacao) * 0.9)) - len(novaPopulacao)):
+    # 95 % da nova população será composta por indivíduos resultantes do crossover e mutação
+    while len(novaPopulacao) < int(len(populacao) * 0.96):
         # Selecionar os mais aptos
-        pai1, pai2 = torneio_selecao(populacao, fitness, 2)
+        # pai1, pai2 = torneio_selecao(populacao, fitness, 2)
+        pai1, pai2 = rank_selecao(populacao, fitness, 2)
+        # pai1, pai2 = random_selecao(populacao, fitness, 2)
+        # pai1, pai2 = roulette_wheel_selection(populacao, fitness, 2)
+        # pai1, pai2 = stochastic_universal_sampling(populacao, fitness, 2)
 
-        filho = crossover(pai1, pai2)
+        # Teste de diferentes crossover
+        # filho = crossover(pai1, pai2, taxaCrossOver)
+        # filho = single_point_crossover(pai1, pai2)
+        filho = two_point_crossover(pai1, pai2)
         filho = mutacao(filho, taxaMutacao)
-        # # Gerar novos atraves de crossover e mutacao
-        # if random.random() < 0.6:
-        #     filho = crossover(pai1, pai2)
-        # else:
-        #     filho = pai1
-
-        # if random.random() < 0.1:
-        #     filho = mutacao(filho, taxaMutacao)
 
         novaPopulacao.append(filho)
 
@@ -771,13 +824,17 @@ def evolucao(populacao, fitness, taxaMutacao):
     return novaPopulacao
 
 
-def geneticAlgorithm(tamPopulacao, numGeracoes, taxaMutacao):
+def geneticAlgorithm(
+    tamPopulacao, numGeracoes, taxaCrossOver, taxaMutacao, taxaElitismo
+):
     populacao = gerarPopulacao(tamPopulacao)
     # print(populacao)
     for i in range(numGeracoes):
         fitness = manyPlaysResultsTrain(3, populacao)
-        print(max(fitness))
-        populacao = evolucao(populacao, fitness, taxaMutacao)
+        print(max(fitness), mean(fitness))
+        populacao = evolucao(
+            populacao, fitness, taxaCrossOver, taxaMutacao, taxaElitismo
+        )
         # print(populacao)
     return populacao
 
@@ -810,7 +867,7 @@ def manyPlaysResultsTest(rounds, best_solution):
 
 def main():
 
-    teste = geneticAlgorithm(100, 1000, 0.1)
+    teste = geneticAlgorithm(100, 1000, 0.5, 0.1, 0.05)
     print(teste)
 
     RENDER_GAME = False
