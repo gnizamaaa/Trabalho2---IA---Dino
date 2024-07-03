@@ -647,7 +647,7 @@ import numpy as np
 def gerarPopulacao(tamPopulacao):
     populacao = []
     for _ in range(tamPopulacao):
-        individuo = np.random.uniform(-100, 100, 28).tolist() + [0, 0, 0, 0]
+        individuo = np.random.uniform(-100, 100, 4).tolist() + [0, 0, 0, 0] + np.random.uniform(-100, 100, 24).tolist()
         populacao.append(individuo)
     return populacao
 
