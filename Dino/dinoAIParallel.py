@@ -9,7 +9,7 @@ pygame.init()
 
 # Valid values: HUMAN_MODE or AI_MODE
 GAME_MODE = "AI_MODE"
-RENDER_GAME = False
+RENDER_GAME = True
 
 # Global Constants
 SCREEN_HEIGHT = 600
@@ -644,31 +644,35 @@ def gradient_ascent(state, max_time):
 import numpy as np
 
 
-# def gerarPopulacao(tamPopulacao):
-#     return [np.random.uniform(-100, 100, 32).tolist() for _ in range(tamPopulacao)]
-
-import numpy as np
-
-def gerarPopulacao(tamPopulacao, num_genes=32, intervalo=(-100, 100), perturbacao=0.1):
-    """
-    Gera uma população inicial diversificada.
-
-    Args:
-    tamPopulacao (int): Tamanho da população.
-    num_genes (int): Número de genes por indivíduo.
-    intervalo (tuple): Intervalo (min, max) para os valores iniciais.
-    perturbacao (float): Fator de perturbação para aumentar a diversidade.
-
-    Returns:
-    list: População inicial.
-    """
-    populacao = [np.random.uniform(intervalo[0], intervalo[1], num_genes).tolist() for _ in range(tamPopulacao)]
-    
-    for i in range(tamPopulacao):
-        perturbacao_aleatoria = np.random.uniform(-perturbacao, perturbacao, num_genes)
-        populacao[i] = (np.array(populacao[i]) + perturbacao_aleatoria).tolist()
-    
+def gerarPopulacao(tamPopulacao):
+    populacao = []
+    for _ in range(tamPopulacao):
+        individuo = np.random.uniform(-100, 100, 28).tolist() + [0, 0, 0, 0]
+        populacao.append(individuo)
     return populacao
+
+
+
+# def gerarPopulacao(tamPopulacao, num_genes=32, intervalo=(-100, 100), perturbacao=0.1):
+#     """
+#     Gera uma população inicial diversificada.
+
+#     Args:
+#     tamPopulacao (int): Tamanho da população.
+#     num_genes (int): Número de genes por indivíduo.
+#     intervalo (tuple): Intervalo (min, max) para os valores iniciais.
+#     perturbacao (float): Fator de perturbação para aumentar a diversidade.
+
+#     Returns:
+#     list: População inicial.
+#     """
+#     populacao = [np.random.uniform(intervalo[0], intervalo[1], num_genes).tolist() for _ in range(tamPopulacao)]
+    
+#     for i in range(tamPopulacao):
+#         perturbacao_aleatoria = np.random.uniform(-perturbacao, perturbacao, num_genes)
+#         populacao[i] = (np.array(populacao[i]) + perturbacao_aleatoria).tolist()
+
+#     return populacao
 
 
 def crossover(individuo1, individuo2, taxaCrossOver=0.6):
