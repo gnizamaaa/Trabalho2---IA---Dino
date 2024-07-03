@@ -9,7 +9,7 @@ pygame.init()
 
 # Valid values: HUMAN_MODE or AI_MODE
 GAME_MODE = "AI_MODE"
-RENDER_GAME = True
+RENDER_GAME = False
 
 # Global Constants
 SCREEN_HEIGHT = 600
@@ -253,13 +253,32 @@ class KeyClassifier:
 def first(x):
     return x[0]
 
-
 def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
+    """
+    Função sigmoide numericamente estável.
+
+    Args:
+    x (numpy array): Entrada para a função sigmoide.
+
+    Returns:
+    numpy array: Saída da função sigmoide.
+    """
+    # Usar a versão numericamente estável da função sigmoide
+    pos_mask = (x >= 0)
+    neg_mask = ~pos_mask
+    z = np.zeros_like(x)
+    z[pos_mask] = np.exp(-x[pos_mask])
+    z[neg_mask] = np.exp(x[neg_mask])
+    top = np.ones_like(x)
+    top[neg_mask] = z[neg_mask]
+    return top / (1 + z)
 
 
 def relu(x):
     return np.maximum(0, x)
+
+
+from sklearn.preprocessing import normalize
 
 
 def fixInput(inputs):
@@ -283,7 +302,8 @@ def fixInput(inputs):
         else:
             inputs[i] = inp
 
-    inputs = np.array(inputs) / (np.sum(inputs) + 1e-9)
+    # inputs = np.array(inputs) / (np.sum(inputs) + 1e-9)
+    # inputs = normalize(inputs)
     return inputs
 
 
@@ -624,14 +644,37 @@ def gradient_ascent(state, max_time):
 import numpy as np
 
 
-def gerarPopulacao(tamPopulacao):
-    return [np.random.uniform(-1, 1, 32).tolist() for _ in range(tamPopulacao)]
+# def gerarPopulacao(tamPopulacao):
+#     return [np.random.uniform(-100, 100, 32).tolist() for _ in range(tamPopulacao)]
+
+import numpy as np
+
+def gerarPopulacao(tamPopulacao, num_genes=32, intervalo=(-100, 100), perturbacao=0.1):
+    """
+    Gera uma população inicial diversificada.
+
+    Args:
+    tamPopulacao (int): Tamanho da população.
+    num_genes (int): Número de genes por indivíduo.
+    intervalo (tuple): Intervalo (min, max) para os valores iniciais.
+    perturbacao (float): Fator de perturbação para aumentar a diversidade.
+
+    Returns:
+    list: População inicial.
+    """
+    populacao = [np.random.uniform(intervalo[0], intervalo[1], num_genes).tolist() for _ in range(tamPopulacao)]
+    
+    for i in range(tamPopulacao):
+        perturbacao_aleatoria = np.random.uniform(-perturbacao, perturbacao, num_genes)
+        populacao[i] = (np.array(populacao[i]) + perturbacao_aleatoria).tolist()
+    
+    return populacao
 
 
 def crossover(individuo1, individuo2, taxaCrossOver=0.6):
     filho = []
     for i in range(len(individuo1)):
-        if random.random() < 0.6:
+        if random.random() < taxaCrossOver:
             filho.append(individuo1[i])
         else:
             filho.append(individuo2[i])
@@ -655,7 +698,7 @@ def mutacao(individuo, taxaMutacao):
     for i in range(len(individuo)):
         if random.random() < taxaMutacao:
             # individuo[i] = random.random()
-            individuo[i] = np.random.uniform(-1, 1)
+            individuo[i] = np.random.uniform(-100, 100)
     return individuo
 
 
@@ -769,34 +812,37 @@ def roulette_wheel_selection(populacao, fitness, num_selecionados):
     return selecionados
 
 
-# Não consegui fazer funcionar ainda
 def stochastic_universal_sampling(populacao, fitness, num_selecionados):
     """
-    Realiza a seleção por amostragem estocástica universal.
+    Realiza a seleção universal estocástica (SUS).
 
     Args:
     populacao (list): Lista de indivíduos na população.
     fitness (function): Função que calcula o fitness de um indivíduo.
+    num_selecionados (int): Número de indivíduos a serem selecionados.
 
     Returns:
     list: Lista de indivíduos selecionados.
     """
     selecionados = []
-    soma = sum(fitness)
-    prob = [f / soma for f in fitness]
-    r = random.random()
-    acumulado = 0
+    soma_fitness = sum(fitness)
+    ponto_inicial = random.uniform(0, soma_fitness / num_selecionados)
+    pontos = [
+        ponto_inicial + i * (soma_fitness / num_selecionados)
+        for i in range(num_selecionados)
+    ]
+
+    prob_acumulada = [sum(fitness[: i + 1]) for i in range(len(fitness))]
+
     i = 0
-    for _ in range(num_selecionados):
-        while r < (acumulado + prob[i]):
-            selecionados.append(populacao[i])
-            r += 1 / num_selecionados
-        acumulado += prob[i]
-        i += 1
+    for ponto in pontos:
+        while prob_acumulada[i] < ponto:
+            i += 1
+        selecionados.append(populacao[i])
+
     return selecionados
 
-
-def evolucao(populacao, fitness, taxaCrossOver=0.5, taxaMutacao=0.1, taxaElitismo=0.05):
+def evolucao(populacao, fitness, taxaCrossOver=0.9, taxaMutacao=0.1, taxaElitismo=0.02):
     novaPopulacao = []
     # Estudar a possibilidade de elitismo
     novaPopulacao += elitismo(populacao, fitness, int(len(populacao) * taxaElitismo))
@@ -805,22 +851,26 @@ def evolucao(populacao, fitness, taxaCrossOver=0.5, taxaMutacao=0.1, taxaElitism
     while len(novaPopulacao) < int(len(populacao) * 0.96):
         # Selecionar os mais aptos
         # pai1, pai2 = torneio_selecao(populacao, fitness, 2)
-        pai1, pai2 = rank_selecao(populacao, fitness, 2)
+        # pai1, pai2 = rank_selecao(populacao, fitness, 2)
         # pai1, pai2 = random_selecao(populacao, fitness, 2)
         # pai1, pai2 = roulette_wheel_selection(populacao, fitness, 2)
-        # pai1, pai2 = stochastic_universal_sampling(populacao, fitness, 2)
+        pai1, pai2 = stochastic_universal_sampling(populacao, fitness, 2)
 
         # Teste de diferentes crossover
         # filho = crossover(pai1, pai2, taxaCrossOver)
         # filho = single_point_crossover(pai1, pai2)
-        filho = two_point_crossover(pai1, pai2)
+        if random.random() < taxaCrossOver:
+            # filho = two_point_crossover(pai1, pai2)
+            filho = single_point_crossover(pai1, pai2)
+        else:
+            filho = pai1
         filho = mutacao(filho, taxaMutacao)
 
         novaPopulacao.append(filho)
 
     # Completar a população com indivíduos aleatórios  (Mais uma tentativa de aumentar a diversidade da população)
     while len(novaPopulacao) < len(populacao):
-        novaPopulacao.append(np.random.uniform(-1, 1, 32).tolist())
+        novaPopulacao.append(np.random.uniform(-100, 100, 32).tolist())
     return novaPopulacao
 
 
@@ -830,8 +880,8 @@ def geneticAlgorithm(
     populacao = gerarPopulacao(tamPopulacao)
     # print(populacao)
     for i in range(numGeracoes):
-        fitness = manyPlaysResultsTrain(3, populacao)
-        print(max(fitness), mean(fitness))
+        fitness = manyPlaysResultsTrain(50, populacao)
+        print(max(fitness), mean(fitness), np.std(fitness))
         populacao = evolucao(
             populacao, fitness, taxaCrossOver, taxaMutacao, taxaElitismo
         )
@@ -853,6 +903,9 @@ def manyPlaysResultsTrain(rounds, solutions):
     mean_results = np.mean(npResults, axis=0) - np.std(
         npResults, axis=0
     )  # axis 0 calcula media da coluna
+
+    #print(max(np.mean(npResults, axis=0)), max(np.std(npResults, axis=0)))
+    # mean_results = np.mean(npResults, axis=0)
     return mean_results
 
 
@@ -867,10 +920,9 @@ def manyPlaysResultsTest(rounds, best_solution):
 
 def main():
 
-    teste = geneticAlgorithm(100, 1000, 0.5, 0.1, 0.05)
+    teste = geneticAlgorithm(100, 200, 0.9, 0.05, 0.02)
     print(teste)
 
-    RENDER_GAME = False
     print(playGame(teste))
     # print(playGame([[random.random() for i in range(32)]]))
     # initial_state = [(15, 250), (18, 350), (20, 450), (1000, 550)]
