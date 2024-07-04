@@ -902,14 +902,19 @@ def run_genetic_algorithm(generations, population_size):
 
     tamborzin = []
     gen = 0
+
+    start = time.process_time()
+    time_max = 60 * 60 * 12
+    end = 0
+
     # for generation in range(generations):
-    while len(tamborzin) < population_size:
+    while len(tamborzin) < population_size and end - start <= time_max:
 
         # Evaluate fitness
         fitness = playGame(population)
 
         for i, fit in enumerate(fitness):
-            if fit > 300:
+            if fit > 150:
                 tamborzin.append(population[i])
         # Selection
         # Select parents based on fitness
@@ -936,10 +941,88 @@ def run_genetic_algorithm(generations, population_size):
         # Print generation statistics (optional)
         print(f"Generation-pre-tambor {gen+1}: Best Score - {max(fitness)}")
         gen += 1
+        end = time.process_time()
 
     population = tamborzin
+    tamborzin = []
+    while len(tamborzin) < population_size and end - start <= time_max:
 
+        # Evaluate fitness
+        fitness = playGame(population)
+
+        for i, fit in enumerate(fitness):
+            if fit > 300:
+                tamborzin.append(population[i])
+        # Selection
+        # Select parents based on fitness
+
+        # Crossover
+        offspring = []
+        for i in range(0, population_size):
+            parents = rank_selecao2(population, fitness)
+            parent1, parent2 = parents[0], parents[1]
+            temp = two_point_crossover(parent1, parent2)
+            temp = mutacao(temp, 0.2)
+            offspring.append(temp)
+            # offspring.extend(crossover(parent1, parent2))
+
+        # Elitismo
+        # Select a small portion of the fittest individuals to carry over to the next generation
+        elite = elitismo(
+            population, fitness, int(0.1 * population_size)
+        )  # Replace 10% with elite
+        offspring = offspring[: int(0.9 * population_size)] + elite
+
+        population = offspring  # Replace current population with the new generation
+
+        # Print generation statistics (optional)
+        print(f"Generation-pre-tambor2 {gen+1}: Best Score - {max(fitness)}")
+        gen += 1
+        end = time.process_time()
+
+    population = tamborzin
+    tamborzin = []
+
+    while len(tamborzin) < population_size and end - start <= time_max:
+
+        # Evaluate fitness
+        fitness = playGame(population)
+
+        for i, fit in enumerate(fitness):
+            if fit > 500:
+                tamborzin.append(population[i])
+        # Selection
+        # Select parents based on fitness
+
+        # Crossover
+        offspring = []
+        for i in range(0, population_size):
+            parents = rank_selecao2(population, fitness)
+            parent1, parent2 = parents[0], parents[1]
+            temp = two_point_crossover(parent1, parent2)
+            temp = mutacao(temp, 0.1)
+            offspring.append(temp)
+            # offspring.extend(crossover(parent1, parent2))
+
+        # Elitismo
+        # Select a small portion of the fittest individuals to carry over to the next generation
+        elite = elitismo(
+            population, fitness, int(0.1 * population_size)
+        )  # Replace 10% with elite
+        offspring = offspring[: int(0.9 * population_size)] + elite
+
+        population = offspring  # Replace current population with the new generation
+
+        # Print generation statistics (optional)
+        print(f"Generation-pre-tambor3 {gen+1}: Best Score - {max(fitness)}")
+        gen += 1
+        end = time.process_time()
+
+    population = tamborzin
+    tamborzin = []
     for generation in range(generations):
+        if end - start >= time_max:
+            break
         # Evaluate fitness
         fitness = manyPlaysResultsTrain(3, population)
         # Selection
@@ -966,8 +1049,11 @@ def run_genetic_algorithm(generations, population_size):
 
         # Print generation statistics (optional)
         print(f"Generation {generation+1}: Best Score - {max(fitness)}")
-        
+        end = time.process_time()
+
     for generation in range(generations):
+        if end - start >= time_max:
+            break
         # Evaluate fitness
         fitness = manyPlaysResultsTrain(10, population)
         # Selection
@@ -994,6 +1080,7 @@ def run_genetic_algorithm(generations, population_size):
 
         # Print generation statistics (optional)
         print(f"Generation {generation+1}: Best Score - {max(fitness)}")
+        end = time.process_time()
 
     return population
 
