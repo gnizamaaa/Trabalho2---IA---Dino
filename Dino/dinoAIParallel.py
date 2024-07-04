@@ -9,7 +9,7 @@ pygame.init()
 
 # Valid values: HUMAN_MODE or AI_MODE
 GAME_MODE = "AI_MODE"
-RENDER_GAME = True
+RENDER_GAME = False
 
 # Global Constants
 SCREEN_HEIGHT = 600
@@ -253,25 +253,30 @@ class KeyClassifier:
 def first(x):
     return x[0]
 
+
+# def sigmoid(x):
+#     """
+#     Função sigmoide numericamente estável.
+
+#     Args:
+#     x (numpy array): Entrada para a função sigmoide.
+
+#     Returns:
+#     numpy array: Saída da função sigmoide.
+#     """
+#     # Usar a versão numericamente estável da função sigmoide
+#     pos_mask = x >= 0
+#     neg_mask = ~pos_mask
+#     z = np.zeros_like(x)
+#     z[pos_mask] = np.exp(-x[pos_mask])
+#     z[neg_mask] = np.exp(x[neg_mask])
+#     top = np.ones_like(x)
+#     top[neg_mask] = z[neg_mask]
+#     return top / (1 + z)\
+
+
 def sigmoid(x):
-    """
-    Função sigmoide numericamente estável.
-
-    Args:
-    x (numpy array): Entrada para a função sigmoide.
-
-    Returns:
-    numpy array: Saída da função sigmoide.
-    """
-    # Usar a versão numericamente estável da função sigmoide
-    pos_mask = (x >= 0)
-    neg_mask = ~pos_mask
-    z = np.zeros_like(x)
-    z[pos_mask] = np.exp(-x[pos_mask])
-    z[neg_mask] = np.exp(x[neg_mask])
-    top = np.ones_like(x)
-    top[neg_mask] = z[neg_mask]
-    return top / (1 + z)
+    return 1 / (1 + np.exp(-x))
 
 
 def relu(x):
@@ -302,7 +307,7 @@ def fixInput(inputs):
         else:
             inputs[i] = inp
 
-    # inputs = np.array(inputs) / (np.sum(inputs) + 1e-9)
+    inputs = np.array(inputs) / (np.sum(inputs) + 1e-9)
     # inputs = normalize(inputs)
     return inputs
 
@@ -341,7 +346,7 @@ class NeuralNetwork:
     def __init__(self, state):
         self.state = state
         self.weights = state
-        self.bias = 0
+        self.bias = 1
 
         self.camada1 = CamadaNeuronio(
             [
@@ -399,36 +404,6 @@ class NeuralNetwork:
             [weights[:7], weights[7:14], weights[14:21], weights[21:28]]
         )
         self.camada2.setWeights([weights[28:32]])
-
-
-class KeySimplestClassifier(KeyClassifier):
-    def __init__(self, state):
-        self.state = state
-
-    def keySelector(
-        self,
-        distance,
-        obHeight,
-        speed,
-        obType,
-        nextObDistance,
-        nextObHeight,
-        nextObType,
-    ):
-        self.state = sorted(self.state, key=first)
-        for s, d in self.state:
-            if speed < s:
-                limDist = d
-                break
-        if distance <= limDist:
-            if isinstance(obType, Bird) and obHeight > 50:
-                return "K_DOWN"
-            else:
-                return "K_UP"
-        return "K_NO"
-
-    def updateState(self, state):
-        self.state = state
 
 
 def playerKeySelector():
@@ -581,76 +556,33 @@ def playGame(solutions):
     return solution_fitness
 
 
-# Change State Operator
-def change_state(state, position, vs, vd):
-    aux = state.copy()
-    s, d = state[position]
-    ns = s + vs
-    nd = d + vd
-    if ns < 15 or nd > 1000:
-        return []
-    return aux[:position] + [(ns, nd)] + aux[position + 1 :]
-
-
-# Neighborhood
-def generate_neighborhood(state):
-    neighborhood = []
-    state_size = len(state)
-    for i in range(state_size):
-        ds = random.randint(1, 10)
-        dd = random.randint(1, 100)
-        new_states = [
-            change_state(state, i, ds, 0),
-            change_state(state, i, (-ds), 0),
-            change_state(state, i, 0, dd),
-            change_state(state, i, 0, (-dd)),
-        ]
-        for s in new_states:
-            if s != []:
-                neighborhood.append(s)
-    return neighborhood
-
-
-# Gradiente Ascent
-def gradient_ascent(state, max_time):
-    start = time.process_time()
-    res, max_value = manyPlaysResultsTest(3, state)
-    better = True
-    end = 0
-    while better and end - start <= max_time:
-        neighborhood = generate_neighborhood(state)
-        print(neighborhood)
-        better = False
-
-        results = playGame(neighborhood)
-        for i, value in enumerate(results):
-            if value > max_value:
-                state = neighborhood[i]
-                max_value = value
-                better = True
-        """
-        for s in neighborhood:
-            aiPlayer = KeySimplestClassifier(s)
-            res, value = manyPlaysResults(3)
-            if value > max_value:
-                state = s
-                max_value = value
-                better = True
-        """
-        end = time.process_time()
-    return state, max_value
-
-
 import numpy as np
+
+
+# def gerarPopulacao(tamPopulacao):
+#     populacao = []
+#     for _ in range(tamPopulacao):
+#         individuo = (
+#             np.random.uniform(-1, 1, 4).tolist()
+#             + np.random.uniform(-0.25, 0.25, 3).tolist()
+#             + np.random.uniform(-1, 1, 4).tolist()
+#             + np.random.uniform(-0.25, 0.25, 3).tolist()
+#             + np.random.uniform(-1, 1, 4).tolist()
+#             + np.random.uniform(-0.25, 0.25, 3).tolist()
+#             + np.random.uniform(-1, 1, 4).tolist()
+#             + np.random.uniform(-0.25, 0.25, 3).tolist()
+#             + np.random.uniform(-1, 1, 4).tolist()
+#         )
+#         populacao.append(individuo)
+#     return populacao
 
 
 def gerarPopulacao(tamPopulacao):
     populacao = []
     for _ in range(tamPopulacao):
-        individuo = np.random.uniform(-100, 100, 4).tolist() + [0, 0, 0, 0] + np.random.uniform(-100, 100, 24).tolist()
+        individuo = np.random.uniform(-1, 1, 32).tolist()
         populacao.append(individuo)
     return populacao
-
 
 
 # def gerarPopulacao(tamPopulacao, num_genes=32, intervalo=(-100, 100), perturbacao=0.1):
@@ -667,7 +599,7 @@ def gerarPopulacao(tamPopulacao):
 #     list: População inicial.
 #     """
 #     populacao = [np.random.uniform(intervalo[0], intervalo[1], num_genes).tolist() for _ in range(tamPopulacao)]
-    
+
 #     for i in range(tamPopulacao):
 #         perturbacao_aleatoria = np.random.uniform(-perturbacao, perturbacao, num_genes)
 #         populacao[i] = (np.array(populacao[i]) + perturbacao_aleatoria).tolist()
@@ -702,7 +634,7 @@ def mutacao(individuo, taxaMutacao):
     for i in range(len(individuo)):
         if random.random() < taxaMutacao:
             # individuo[i] = random.random()
-            individuo[i] = np.random.uniform(-100, 100)
+            individuo[i] = np.random.uniform(-1, 1)
     return individuo
 
 
@@ -846,13 +778,15 @@ def stochastic_universal_sampling(populacao, fitness, num_selecionados):
 
     return selecionados
 
+
 def evolucao(populacao, fitness, taxaCrossOver=0.9, taxaMutacao=0.1, taxaElitismo=0.02):
     novaPopulacao = []
-    # Estudar a possibilidade de elitismo
+    # Estudar a possibilidade de elitismo, adicionando duas vezes tentando fazer algo diferente, para que tenham mais influencia na pop grande
+    novaPopulacao += elitismo(populacao, fitness, int(len(populacao) * taxaElitismo))
     novaPopulacao += elitismo(populacao, fitness, int(len(populacao) * taxaElitismo))
 
     # 95 % da nova população será composta por indivíduos resultantes do crossover e mutação
-    while len(novaPopulacao) < int(len(populacao) * 0.96):
+    while len(novaPopulacao) < int(len(populacao)):
         # Selecionar os mais aptos
         # pai1, pai2 = torneio_selecao(populacao, fitness, 2)
         # pai1, pai2 = rank_selecao(populacao, fitness, 2)
@@ -864,8 +798,8 @@ def evolucao(populacao, fitness, taxaCrossOver=0.9, taxaMutacao=0.1, taxaElitism
         # filho = crossover(pai1, pai2, taxaCrossOver)
         # filho = single_point_crossover(pai1, pai2)
         if random.random() < taxaCrossOver:
-            # filho = two_point_crossover(pai1, pai2)
-            filho = single_point_crossover(pai1, pai2)
+            filho = two_point_crossover(pai1, pai2)
+            # filho = single_point_crossover(pai1, pai2)
         else:
             filho = pai1
         filho = mutacao(filho, taxaMutacao)
@@ -873,8 +807,8 @@ def evolucao(populacao, fitness, taxaCrossOver=0.9, taxaMutacao=0.1, taxaElitism
         novaPopulacao.append(filho)
 
     # Completar a população com indivíduos aleatórios  (Mais uma tentativa de aumentar a diversidade da população)
-    while len(novaPopulacao) < len(populacao):
-        novaPopulacao.append(np.random.uniform(-100, 100, 32).tolist())
+    # while len(novaPopulacao) < len(populacao):
+    #     novaPopulacao.append(np.random.uniform(-1, 1, 32).tolist())
     return novaPopulacao
 
 
@@ -884,7 +818,7 @@ def geneticAlgorithm(
     populacao = gerarPopulacao(tamPopulacao)
     # print(populacao)
     for i in range(numGeracoes):
-        fitness = manyPlaysResultsTrain(50, populacao)
+        fitness = manyPlaysResultsTrain(10, populacao)
         print(max(fitness), mean(fitness), np.std(fitness))
         populacao = evolucao(
             populacao, fitness, taxaCrossOver, taxaMutacao, taxaElitismo
@@ -908,7 +842,7 @@ def manyPlaysResultsTrain(rounds, solutions):
         npResults, axis=0
     )  # axis 0 calcula media da coluna
 
-    #print(max(np.mean(npResults, axis=0)), max(np.std(npResults, axis=0)))
+    print(max(np.mean(npResults, axis=0)), max(np.std(npResults, axis=0)))
     # mean_results = np.mean(npResults, axis=0)
     return mean_results
 
@@ -922,12 +856,92 @@ def manyPlaysResultsTest(rounds, best_solution):
     return (results, npResults.mean() - npResults.std())
 
 
+# ... (Your existing code)
+
+
+def rank_selecao2(population, fitness):
+    """
+    Performs rank selection to select parents for the next generation.
+
+    Args:
+        population: List of individual weights.
+        fitness: List of fitness values for each individual.
+    Returns:
+        List of selected parent weights.
+    """
+    # Sort individuals by fitness in descending order
+    sorted_population = sorted(
+        zip(population, fitness), key=lambda x: x[1], reverse=True
+    )
+    ranked_population = [x[0] for x in sorted_population]  # Extract weights
+
+    # Create a list of probabilities based on rank
+    probabilities = [1 / (i + 1) for i in range(len(ranked_population))]
+    probabilities = [p / sum(probabilities) for p in probabilities]
+
+    # Select parents using weighted random sampling
+    parents = []
+    for _ in range(len(population)):
+        parent_index = np.random.choice(len(ranked_population), p=probabilities)
+        parents.append(ranked_population[parent_index])
+
+    return parents
+
+
+# Tentando fazer o algoritmo junto com o que faz o jogo rodar e reescrevendo com nova cabeça
+def run_genetic_algorithm(generations, population_size):
+    """
+    Runs the genetic algorithm for a specified number of generations.
+
+    Args:
+        generations: Number of generations to evolve the population.
+        population_size: Size of the population in each generation.
+    """
+    population = gerarPopulacao(population_size)  # Generate initial population
+    # print(population)
+
+    for generation in range(generations):
+        # Evaluate fitness
+        fitness = playGame(population)  # Play game with each individual
+
+        # Selection
+        # Select parents based on fitness
+
+        # Crossover
+        offspring = []
+        for i in range(0, population_size):
+            parents = rank_selecao2(population, fitness)
+            parent1, parent2 = parents[0], parents[1]
+            temp = two_point_crossover(parent1, parent2)
+            temp = mutacao(temp, 0.2)
+            offspring.append(temp)
+            # offspring.extend(crossover(parent1, parent2))
+
+        # Elitismo
+        # Select a small portion of the fittest individuals to carry over to the next generation
+        elite = elitismo(
+            population, fitness, int(0.1 * population_size)
+        )  # Replace 10% with elite
+        offspring = offspring[: int(0.9 * population_size)] + elite
+
+        population = offspring  # Replace current population with the new generation
+
+        # Print generation statistics (optional)
+        print(f"Generation {generation+1}: Best Score - {max(fitness)}")
+
+    return population
+
+
 def main():
 
-    teste = geneticAlgorithm(100, 200, 0.9, 0.05, 0.02)
-    print(teste)
+    # generations = 100  # Number of generations
+    # population_size = 20  # Population size per generation
+    run_genetic_algorithm(1000, 100)
 
-    print(playGame(teste))
+    # teste = geneticAlgorithm(100, 100, 0.9, 0.05, 0.02)
+    # print(teste)
+
+    # print(playGame(teste))
     # print(playGame([[random.random() for i in range(32)]]))
     # initial_state = [(15, 250), (18, 350), (20, 450), (1000, 550)]
     # best_state, best_value = gradient_ascent(initial_state, 5000)
