@@ -628,19 +628,24 @@ def two_point_crossover(individuo1, individuo2):
     ponto2 = random.randint(ponto1, len(individuo1) - 1)
     filho1 = individuo1[:ponto1] + individuo2[ponto1:ponto2] + individuo1[ponto2:]
     filho2 = individuo2[:ponto1] + individuo1[ponto1:ponto2] + individuo2[ponto2:]
-    return filho1, filho2
+    return (filho1, filho2)
 
 
 def custom_crossover(individuo1, individuo2):
     # Na minha visão faz sentido fazer um multipoint que tem n pontos de corte
     # E quero testar essa possibilidade
-    filho = []
+    filho1 = []
+    filho2 = []
     for i in range(len(individuo1)):
         if i % 2 == 0:
-            filho.append(individuo1[i])
+            filho1.append(individuo1[i])
+            filho2.append(individuo2[i])
+
         else:
-            filho.append(individuo2[i])
-    return filho
+            filho1.append(individuo2[i])
+            filho2.append(individuo1[i])
+
+    return (filho1, filho2)
 
 
 def mutacao(individuo):
@@ -803,12 +808,16 @@ def evolucao(populacao, fitness, taxaCrossOver=0.6, taxaMutacao=0.1, taxaElitism
         pai1 = tempPopulacao[i]
         pai2 = tempPopulacao[i + 1]
         if random.random() < taxaCrossOver:
-            filhos = two_point_crossover(pai1, pai2)
+            filho1,filho2 = custom_crossover(pai1, pai2)
         else:
-            filhos = pai1, pai2
+            filho1 = pai1
+            filho2 = pai2
         if random.random() < taxaMutacao:
-            filhos = mutacao(filhos[0]), mutacao(filhos[1])
-        novaPopulacao.append(filhos)
+            filho1 = mutacao(filho1)
+            filho2 = mutacao(filho2)
+        novaPopulacao.append(filho1)
+        novaPopulacao.append(filho2)
+
 
     # Completar a população com indivíduos aleatórios  (Mais uma tentativa de aumentar a diversidade da população)
     while len(novaPopulacao) < len(populacao):
@@ -821,12 +830,21 @@ def geneticAlgorithm(
 ):
     populacao = gerarPopulacao(tamPopulacao)
     # print(populacao)
-    for i in range(numGeracoes):
-        fitness = manyPlaysResultsTrain(3, populacao)
+    
+    start = time.process_time()
+    time_max = 60 * 60 * 12
+    end = 0
+    i=0
+    
+    
+    while i <= numGeracoes and end - start <= time_max:
+        ##fitness = manyPlaysResultsTrain(3, populacao)
+        fitness = playGame(populacao)
         print(max(fitness), mean(fitness), np.std(fitness))
         populacao = evolucao(
             populacao, fitness, taxaCrossOver, taxaMutacao, taxaElitismo
         )
+        end = time.process_time()
         # print(populacao)
     return populacao
 
@@ -846,7 +864,7 @@ def manyPlaysResultsTrain(rounds, solutions):
         npResults, axis=0
     )  # axis 0 calcula media da coluna
 
-    print(max(np.mean(npResults, axis=0)), max(np.std(npResults, axis=0)))
+    #print(max(np.mean(npResults, axis=0)), max(np.std(npResults, axis=0)))
     # mean_results = np.mean(npResults, axis=0)
     return mean_results
 
@@ -890,204 +908,6 @@ def rank_selecao2(population, fitness):
         parents.append(ranked_population[parent_index])
 
     return parents
-
-
-# Tentando fazer o algoritmo junto com o que faz o jogo rodar e reescrevendo com nova cabeça
-def run_genetic_algorithm(generations, population_size):
-    """
-    Runs the genetic algorithm for a specified number of generations.
-
-    Args:
-        generations: Number of generations to evolve the population.
-        population_size: Size of the population in each generation.
-    """
-    population = gerarPopulacao(population_size)  # Generate initial population
-    # print(population)
-
-    tamborzin = []
-    gen = 0
-
-    start = time.process_time()
-    time_max = 60 * 60 * 12
-    end = 0
-
-    # for generation in range(generations):
-    while len(tamborzin) < population_size and end - start <= time_max:
-
-        # Evaluate fitness
-        fitness = playGame(population)
-
-        for i, fit in enumerate(fitness):
-            if fit > 150:
-                tamborzin.append(population[i])
-        # Selection
-        # Select parents based on fitness
-
-        # Crossover
-        offspring = []
-        for i in range(0, population_size):
-            parents = rank_selecao2(population, fitness)
-            parent1, parent2 = parents[0], parents[1]
-            temp = two_point_crossover(parent1, parent2)
-            temp = mutacao(temp, 0.4)
-            offspring.append(temp)
-            # offspring.extend(crossover(parent1, parent2))
-
-        # Elitismo
-        # Select a small portion of the fittest individuals to carry over to the next generation
-        elite = elitismo(
-            population, fitness, int(0.1 * population_size)
-        )  # Replace 10% with elite
-        offspring = offspring[: int(0.9 * population_size)] + elite
-
-        population = offspring  # Replace current population with the new generation
-
-        # Print generation statistics (optional)
-        print(f"Generation-pre-tambor {gen+1}: Best Score - {max(fitness)}")
-        gen += 1
-        end = time.process_time()
-
-    population = tamborzin
-    tamborzin = []
-    while len(tamborzin) < population_size and end - start <= time_max:
-
-        # Evaluate fitness
-        fitness = playGame(population)
-
-        for i, fit in enumerate(fitness):
-            if fit > 300:
-                tamborzin.append(population[i])
-        # Selection
-        # Select parents based on fitness
-
-        # Crossover
-        offspring = []
-        for i in range(0, population_size):
-            parents = rank_selecao2(population, fitness)
-            parent1, parent2 = parents[0], parents[1]
-            temp = two_point_crossover(parent1, parent2)
-            temp = mutacao(temp, 0.2)
-            offspring.append(temp)
-            # offspring.extend(crossover(parent1, parent2))
-
-        # Elitismo
-        # Select a small portion of the fittest individuals to carry over to the next generation
-        elite = elitismo(
-            population, fitness, int(0.1 * population_size)
-        )  # Replace 10% with elite
-        offspring = offspring[: int(0.9 * population_size)] + elite
-
-        population = offspring  # Replace current population with the new generation
-
-        # Print generation statistics (optional)
-        print(f"Generation-pre-tambor2 {gen+1}: Best Score - {max(fitness)}")
-        gen += 1
-        end = time.process_time()
-
-    population = tamborzin
-    tamborzin = []
-
-    while len(tamborzin) < population_size and end - start <= time_max:
-
-        # Evaluate fitness
-        fitness = playGame(population)
-
-        for i, fit in enumerate(fitness):
-            if fit > 500:
-                tamborzin.append(population[i])
-        # Selection
-        # Select parents based on fitness
-
-        # Crossover
-        offspring = []
-        for i in range(0, population_size):
-            parents = rank_selecao2(population, fitness)
-            parent1, parent2 = parents[0], parents[1]
-            temp = two_point_crossover(parent1, parent2)
-            temp = mutacao(temp, 0.1)
-            offspring.append(temp)
-            # offspring.extend(crossover(parent1, parent2))
-
-        # Elitismo
-        # Select a small portion of the fittest individuals to carry over to the next generation
-        elite = elitismo(
-            population, fitness, int(0.1 * population_size)
-        )  # Replace 10% with elite
-        offspring = offspring[: int(0.9 * population_size)] + elite
-
-        population = offspring  # Replace current population with the new generation
-
-        # Print generation statistics (optional)
-        print(f"Generation-pre-tambor3 {gen+1}: Best Score - {max(fitness)}")
-        gen += 1
-        end = time.process_time()
-
-    population = tamborzin
-    tamborzin = []
-    for generation in range(generations):
-        if end - start >= time_max:
-            break
-        # Evaluate fitness
-        fitness = manyPlaysResultsTrain(3, population)
-        # Selection
-        # Select parents based on fitness
-
-        # Crossover
-        offspring = []
-        for i in range(0, population_size):
-            parents = rank_selecao2(population, fitness)
-            parent1, parent2 = parents[0], parents[1]
-            temp = two_point_crossover(parent1, parent2)
-            temp = mutacao(temp, 0.2)
-            offspring.append(temp)
-            # offspring.extend(crossover(parent1, parent2))
-
-        # Elitismo
-        # Select a small portion of the fittest individuals to carry over to the next generation
-        elite = elitismo(
-            population, fitness, int(0.1 * population_size)
-        )  # Replace 10% with elite
-        offspring = offspring[: int(0.9 * population_size)] + elite
-
-        population = offspring  # Replace current population with the new generation
-
-        # Print generation statistics (optional)
-        print(f"Generation {generation+1}: Best Score - {max(fitness)}")
-        end = time.process_time()
-
-    for generation in range(generations):
-        if end - start >= time_max:
-            break
-        # Evaluate fitness
-        fitness = manyPlaysResultsTrain(10, population)
-        # Selection
-        # Select parents based on fitness
-
-        # Crossover
-        offspring = []
-        for i in range(0, population_size):
-            parents = rank_selecao2(population, fitness)
-            parent1, parent2 = parents[0], parents[1]
-            temp = two_point_crossover(parent1, parent2)
-            temp = mutacao(temp, 0.1)
-            offspring.append(temp)
-            # offspring.extend(crossover(parent1, parent2))
-
-        # Elitismo
-        # Select a small portion of the fittest individuals to carry over to the next generation
-        elite = elitismo(
-            population, fitness, int(0.1 * population_size)
-        )  # Replace 10% with elite
-        offspring = offspring[: int(0.9 * population_size)] + elite
-
-        population = offspring  # Replace current population with the new generation
-
-        # Print generation statistics (optional)
-        print(f"Generation {generation+1}: Best Score - {max(fitness)}")
-        end = time.process_time()
-
-    return population
-
 
 def main():
 
