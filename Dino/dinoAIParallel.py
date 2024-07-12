@@ -564,13 +564,13 @@ def gerarPopulacao(tamPopulacao):
     for _ in range(tamPopulacao):
         individuo = (
             np.random.uniform(-1, 1, 4).tolist()
-            + np.random.uniform(-0.25, 0.25, 3).tolist()
+            + np.random.uniform(-0.15, 0.15, 3).tolist()
             + np.random.uniform(-1, 1, 4).tolist()
-            + np.random.uniform(-0.25, 0.25, 3).tolist()
+            + np.random.uniform(-0.15, 0.15, 3).tolist()
             + np.random.uniform(-1, 1, 4).tolist()
-            + np.random.uniform(-0.25, 0.25, 3).tolist()
+            + np.random.uniform(-0.15, 0.15, 3).tolist()
             + np.random.uniform(-1, 1, 4).tolist()
-            + np.random.uniform(-0.25, 0.25, 3).tolist()
+            + np.random.uniform(-0.15, 0.15, 3).tolist()
             + np.random.uniform(-1, 1, 4).tolist()
         )
         populacao.append(individuo)
@@ -624,17 +624,28 @@ def single_point_crossover(individuo1, individuo2):
 
 
 def two_point_crossover(individuo1, individuo2):
-    ponto1 = random.randint(0, len(individuo1))
-    ponto2 = random.randint(ponto1, len(individuo1))
-    filho = individuo1[:ponto1] + individuo2[ponto1:ponto2] + individuo1[ponto2:]
+    ponto1 = random.randint(0, len(individuo1) - 1)
+    ponto2 = random.randint(ponto1, len(individuo1) - 1)
+    filho1 = individuo1[:ponto1] + individuo2[ponto1:ponto2] + individuo1[ponto2:]
+    filho2 = individuo2[:ponto1] + individuo1[ponto1:ponto2] + individuo2[ponto2:]
+    return filho1, filho2
+
+
+def custom_crossover(individuo1, individuo2):
+    # Na minha visão faz sentido fazer um multipoint que tem n pontos de corte
+    # E quero testar essa possibilidade
+    filho = []
+    for i in range(len(individuo1)):
+        if i % 2 == 0:
+            filho.append(individuo1[i])
+        else:
+            filho.append(individuo2[i])
     return filho
 
 
-def mutacao(individuo, taxaMutacao):
-    for i in range(len(individuo)):
-        if random.random() < taxaMutacao:
-            # individuo[i] = random.random()
-            individuo[i] = np.random.uniform(-1, 1)
+def mutacao(individuo):
+    i = random.randint(0, len(individuo) - 1)
+    individuo[i] = np.random.uniform(-1, 1)
     return individuo
 
 
@@ -779,46 +790,39 @@ def stochastic_universal_sampling(populacao, fitness, num_selecionados):
     return selecionados
 
 
-def evolucao(populacao, fitness, taxaCrossOver=0.9, taxaMutacao=0.1, taxaElitismo=0.02):
+def evolucao(populacao, fitness, taxaCrossOver=0.6, taxaMutacao=0.1, taxaElitismo=0.02):
     novaPopulacao = []
     # Estudar a possibilidade de elitismo, adicionando duas vezes tentando fazer algo diferente, para que tenham mais influencia na pop grande
     novaPopulacao += elitismo(populacao, fitness, int(len(populacao) * taxaElitismo))
-    novaPopulacao += elitismo(populacao, fitness, int(len(populacao) * taxaElitismo))
 
-    # 95 % da nova população será composta por indivíduos resultantes do crossover e mutação
-    while len(novaPopulacao) < int(len(populacao)):
-        # Selecionar os mais aptos
-        # pai1, pai2 = torneio_selecao(populacao, fitness, 2)
-        # pai1, pai2 = rank_selecao(populacao, fitness, 2)
-        # pai1, pai2 = random_selecao(populacao, fitness, 2)
-        # pai1, pai2 = roulette_wheel_selection(populacao, fitness, 2)
-        pai1, pai2 = stochastic_universal_sampling(populacao, fitness, 2)
+    tempPopulacao = torneio_selecao(
+        populacao, fitness, len(populacao) - int(len(novaPopulacao)), 3
+    )
 
-        # Teste de diferentes crossover
-        # filho = crossover(pai1, pai2, taxaCrossOver)
-        # filho = single_point_crossover(pai1, pai2)
+    for i in range(0, len(tempPopulacao), 2):
+        pai1 = tempPopulacao[i]
+        pai2 = tempPopulacao[i + 1]
         if random.random() < taxaCrossOver:
-            filho = two_point_crossover(pai1, pai2)
-            # filho = single_point_crossover(pai1, pai2)
+            filhos = two_point_crossover(pai1, pai2)
         else:
-            filho = pai1
-        filho = mutacao(filho, taxaMutacao)
-
-        novaPopulacao.append(filho)
+            filhos = pai1, pai2
+        if random.random() < taxaMutacao:
+            filhos = mutacao(filhos[0]), mutacao(filhos[1])
+        novaPopulacao.append(filhos)
 
     # Completar a população com indivíduos aleatórios  (Mais uma tentativa de aumentar a diversidade da população)
-    # while len(novaPopulacao) < len(populacao):
-    #     novaPopulacao.append(np.random.uniform(-1, 1, 32).tolist())
+    while len(novaPopulacao) < len(populacao):
+        novaPopulacao.append(np.random.uniform(-1, 1, 32).tolist())
     return novaPopulacao
 
 
 def geneticAlgorithm(
-    tamPopulacao, numGeracoes, taxaCrossOver, taxaMutacao, taxaElitismo
+    tamPopulacao, numGeracoes, taxaCrossOver=0.6, taxaMutacao=0.1, taxaElitismo=0.02
 ):
     populacao = gerarPopulacao(tamPopulacao)
     # print(populacao)
     for i in range(numGeracoes):
-        fitness = manyPlaysResultsTrain(10, populacao)
+        fitness = manyPlaysResultsTrain(3, populacao)
         print(max(fitness), mean(fitness), np.std(fitness))
         populacao = evolucao(
             populacao, fitness, taxaCrossOver, taxaMutacao, taxaElitismo
@@ -1002,8 +1006,8 @@ def main():
 
     # generations = 100  # Number of generations
     # population_size = 20  # Population size per generation
-    run_genetic_algorithm(1000, 100)
-
+    #run_genetic_algorithm(1000, 100)
+    teste = geneticAlgorithm(100, 100)
     # teste = geneticAlgorithm(100, 100, 0.9, 0.05, 0.02)
     # print(teste)
 
@@ -1012,9 +1016,9 @@ def main():
     # initial_state = [(15, 250), (18, 350), (20, 450), (1000, 550)]
     # best_state, best_value = gradient_ascent(initial_state, 5000)
 
-    # res, value = manyPlaysResultsTest(30, best_state)
-    # npRes = np.asarray(res)
-    # print(res, npRes.mean(), npRes.std(), value)
+    res, value = manyPlaysResultsTest(30, teste)
+    npRes = np.asarray(res)
+    print(res, npRes.mean(), npRes.std(), value)
 
 
 main()
