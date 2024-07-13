@@ -563,15 +563,40 @@ def gerarPopulacao(tamPopulacao):
     populacao = []
     for _ in range(tamPopulacao):
         individuo = (
-            np.random.uniform(-0.5, 0.5, 4).tolist()
-            + np.random.uniform(-0.15, 0.15, 3).tolist()
-            + np.random.uniform(-0.5, 0.5, 4).tolist()
-            + np.random.uniform(-0.15, 0.15, 3).tolist()
-            + np.random.uniform(-0.5, 0.5, 4).tolist()
-            + np.random.uniform(-0.15, 0.15, 3).tolist()
-            + np.random.uniform(-0.5, 0.5, 4).tolist()
-            + np.random.uniform(-0.15, 0.15, 3).tolist()
-            + np.random.uniform(-0.5, 0.5, 4).tolist()
+            ## Neuronio 1
+            np.random.uniform(-0.3, 0.3, 1).tolist()
+            + np.random.uniform(-0.8, 0.1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-1, 0.5, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            ## Neuronio 2
+            + np.random.uniform(-0.3, 0.3, 1).tolist()
+            + np.random.uniform(-0.8, 0.1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-1, 0.5, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            ## Neuronio 3
+            + np.random.uniform(-0.3, 0.3, 1).tolist()
+            + np.random.uniform(-0.8, 0.1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-1, 0.5, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            ## Neuronio 4
+            + np.random.uniform(-0.3, 0.3, 1).tolist()
+            + np.random.uniform(-0.8, 0.1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-1, 0.5, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            ## Neuronio 5
+            + np.random.uniform(-0.3, 0.3, 4).tolist()
         )
         populacao.append(individuo)
     return populacao
@@ -650,7 +675,7 @@ def custom_crossover(individuo1, individuo2):
 
 def mutacao(individuo):
     i = random.randint(0, len(individuo) - 1)
-    # Aqui eu nao estou descartando a possibilidade de valor acima de 0.5 porque 
+    # Aqui eu nao estou descartando a possibilidade de valor acima de 0.5 porque
     # caso esse valor seja ruim, sera descartado na prox iteracao provavelmente
     individuo[i] = np.random.uniform(-1, 1)
     return individuo
@@ -922,29 +947,28 @@ from scipy import stats
 import pandas as pd
 
 
-def corrected_dependent_ttest(data1, data2, n_training_samples,
-  n_test_samples):
-  n = len(data1)
-  differences = [(data1[i]-data2[i]) for i in range(n)]
-  sd = stdev(differences)
-  divisor = 1 / n * sum(differences)
-  test_training_ratio = n_test_samples / n_training_samples
-  denominator = sqrt(1 / n + test_training_ratio) * sd
-  t_stat = divisor / denominator
-  # degrees of freedom
-  df = n - 1
-  # calculate the p-value
-  p = (1.0 - t.cdf(abs(t_stat), df)) * 2.0
-  # return everything
-  return t_stat, p
+def corrected_dependent_ttest(data1, data2, n_training_samples, n_test_samples):
+    n = len(data1)
+    differences = [(data1[i] - data2[i]) for i in range(n)]
+    sd = stdev(differences)
+    divisor = 1 / n * sum(differences)
+    test_training_ratio = n_test_samples / n_training_samples
+    denominator = sqrt(1 / n + test_training_ratio) * sd
+    t_stat = divisor / denominator
+    # degrees of freedom
+    df = n - 1
+    # calculate the p-value
+    p = (1.0 - t.cdf(abs(t_stat), df)) * 2.0
+    # return everything
+    return t_stat, p
 
 
 def main():
 
     # plt.ion()  # Habilita o modo interativo do grafico
 
-    teste = geneticAlgorithm(100, 4000)
-    atualizar_grafico(4000, melhor_resultado, linhas, ax)
+    teste = geneticAlgorithm(100, 10000)
+    atualizar_grafico(10000, melhor_resultado, linhas, ax)
     # plt.ioff()  # Desabilita o modo interativo
     # plt.show()  # Exibe o gráfico final
     fig.savefig("melhor_resultado_por_iteracao.png")
@@ -1007,19 +1031,18 @@ def main():
     # plt.show()
     fig.savefig("boxplot_xprof.png")
     print("Gráfico salvo como 'boxplot_xprof.png'")
-    
 
     testes = [[0 for i in range(2)] for j in range(2)]
 
     for i in range(len(data)):
-        for j in range(i+1, len(data)):
+        for j in range(i + 1, len(data)):
             testes[i][j] = stats.ttest_ind(data[i], data[j])[1]
-    
+
     for i in range(len(data)):
         for j in range(i):
             testes[i][j] = stats.wilcoxon(data[i], data[j])[1]
-            
-    nomes = ['Aluno', 'Prof']
+
+    nomes = ["Aluno", "Prof"]
 
     for i in range(len(nomes)):
         testes[i][i] = nomes[i]
