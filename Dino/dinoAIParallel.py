@@ -289,7 +289,7 @@ from sklearn.preprocessing import normalize
 def fixInput(inputs):
 
     classes = {
-        Bird: 1,
+        Bird: -1,
         SmallCactus: 2,
         LargeCactus: 3,
         Cloud: 4,
@@ -563,15 +563,15 @@ def gerarPopulacao(tamPopulacao):
     populacao = []
     for _ in range(tamPopulacao):
         individuo = (
-            np.random.uniform(-1, 1, 4).tolist()
+            np.random.uniform(-0.5, 0.5, 4).tolist()
             + np.random.uniform(-0.15, 0.15, 3).tolist()
-            + np.random.uniform(-1, 1, 4).tolist()
+            + np.random.uniform(-0.5, 0.5, 4).tolist()
             + np.random.uniform(-0.15, 0.15, 3).tolist()
-            + np.random.uniform(-1, 1, 4).tolist()
+            + np.random.uniform(-0.5, 0.5, 4).tolist()
             + np.random.uniform(-0.15, 0.15, 3).tolist()
-            + np.random.uniform(-1, 1, 4).tolist()
+            + np.random.uniform(-0.5, 0.5, 4).tolist()
             + np.random.uniform(-0.15, 0.15, 3).tolist()
-            + np.random.uniform(-1, 1, 4).tolist()
+            + np.random.uniform(-0.5, 0.5, 4).tolist()
         )
         populacao.append(individuo)
     return populacao
@@ -650,7 +650,7 @@ def custom_crossover(individuo1, individuo2):
 
 def mutacao(individuo):
     i = random.randint(0, len(individuo) - 1)
-    individuo[i] = np.random.uniform(-1, 1)
+    individuo[i] = np.random.uniform(-0.5, 0.5)
     return individuo
 
 
@@ -804,11 +804,11 @@ def evolucao(populacao, fitness, taxaCrossOver=0.6, taxaMutacao=0.1, taxaElitism
         populacao, fitness, len(populacao) - int(len(novaPopulacao)), 3
     )
 
-    for i in range(0, len(tempPopulacao), 2):
+    for i in range(0, len(tempPopulacao) - 1, 2):
         pai1 = tempPopulacao[i]
         pai2 = tempPopulacao[i + 1]
         if random.random() < taxaCrossOver:
-            filho1,filho2 = custom_crossover(pai1, pai2)
+            filho1, filho2 = custom_crossover(pai1, pai2)
         else:
             filho1 = pai1
             filho2 = pai2
@@ -817,7 +817,6 @@ def evolucao(populacao, fitness, taxaCrossOver=0.6, taxaMutacao=0.1, taxaElitism
             filho2 = mutacao(filho2)
         novaPopulacao.append(filho1)
         novaPopulacao.append(filho2)
-
 
     # Completar a população com indivíduos aleatórios  (Mais uma tentativa de aumentar a diversidade da população)
     while len(novaPopulacao) < len(populacao):
@@ -830,22 +829,34 @@ def geneticAlgorithm(
 ):
     populacao = gerarPopulacao(tamPopulacao)
     # print(populacao)
-    
+
     start = time.process_time()
     time_max = 60 * 60 * 12
     end = 0
-    i=0
-    
-    
+    i = 0
+
     while i <= numGeracoes and end - start <= time_max:
-        ##fitness = manyPlaysResultsTrain(3, populacao)
-        fitness = playGame(populacao)
+
+        if i < 0.25 * numGeracoes:
+            taxaCrossOverI = 0.8
+            taxaMutacaoI = 0.2
+            taxaElitismoI = 0.01
+        else:
+            taxaCrossOverI = 0.6
+            taxaMutacaoI = 0.1
+            taxaElitismoI = 0.02
+
+        fitness = manyPlaysResultsTrain(3, populacao)
         print(max(fitness), mean(fitness), np.std(fitness))
         populacao = evolucao(
-            populacao, fitness, taxaCrossOver, taxaMutacao, taxaElitismo
+            populacao, fitness, taxaCrossOverI, taxaMutacaoI, taxaElitismoI
         )
         end = time.process_time()
         # print(populacao)
+        melhor_resultado.append(max(fitness))
+        # atualizar_grafico(i, melhor_resultado, linhas, ax)
+
+        i += 1
     return populacao
 
 
@@ -860,12 +871,12 @@ def manyPlaysResultsTrain(rounds, solutions):
 
     npResults = np.asarray(results)
 
-    mean_results = np.mean(npResults, axis=0) - np.std(
-        npResults, axis=0
-    )  # axis 0 calcula media da coluna
+    # mean_results = np.mean(npResults, axis=0) - np.std(
+    #     npResults, axis=0
+    # )  # axis 0 calcula media da coluna
 
-    #print(max(np.mean(npResults, axis=0)), max(np.std(npResults, axis=0)))
-    # mean_results = np.mean(npResults, axis=0)
+    # print(max(np.mean(npResults, axis=0)), max(np.std(npResults, axis=0)))
+    mean_results = np.mean(npResults, axis=0)
     return mean_results
 
 
@@ -878,54 +889,151 @@ def manyPlaysResultsTest(rounds, best_solution):
     return (results, npResults.mean() - npResults.std())
 
 
-# ... (Your existing code)
+def saidaResults(rounds, solutions):
+    results = []
+    for round in range(rounds):
+        results += [playGame(solutions)]
+
+    npResults = np.asarray(results)
+    return (npResults.T, npResults.mean(axis=0), npResults.std(axis=0))
 
 
-def rank_selecao2(population, fitness):
-    """
-    Performs rank selection to select parents for the next generation.
+import matplotlib.pyplot as plt
 
-    Args:
-        population: List of individual weights.
-        fitness: List of fitness values for each individual.
-    Returns:
-        List of selected parent weights.
-    """
-    # Sort individuals by fitness in descending order
-    sorted_population = sorted(
-        zip(population, fitness), key=lambda x: x[1], reverse=True
-    )
-    ranked_population = [x[0] for x in sorted_population]  # Extract weights
 
-    # Create a list of probabilities based on rank
-    probabilities = [1 / (i + 1) for i in range(len(ranked_population))]
-    probabilities = [p / sum(probabilities) for p in probabilities]
+# Função para atualizar o gráfico
+def atualizar_grafico(iteracao, melhor_resultado, linhas, eixo):
+    linhas.set_xdata(list(range(iteracao + 1)))
+    linhas.set_ydata(melhor_resultado)
+    eixo.relim()
+    eixo.autoscale_view()
+    # plt.draw()
+    # plt.pause(0.01)
 
-    # Select parents using weighted random sampling
-    parents = []
-    for _ in range(len(population)):
-        parent_index = np.random.choice(len(ranked_population), p=probabilities)
-        parents.append(ranked_population[parent_index])
 
-    return parents
+import seaborn as sns
+
+from scipy.stats import t
+from math import sqrt
+from statistics import stdev
+from scipy import stats
+import pandas as pd
+
+
+def corrected_dependent_ttest(data1, data2, n_training_samples,
+  n_test_samples):
+  n = len(data1)
+  differences = [(data1[i]-data2[i]) for i in range(n)]
+  sd = stdev(differences)
+  divisor = 1 / n * sum(differences)
+  test_training_ratio = n_test_samples / n_training_samples
+  denominator = sqrt(1 / n + test_training_ratio) * sd
+  t_stat = divisor / denominator
+  # degrees of freedom
+  df = n - 1
+  # calculate the p-value
+  p = (1.0 - t.cdf(abs(t_stat), df)) * 2.0
+  # return everything
+  return t_stat, p
+
 
 def main():
 
-    # generations = 100  # Number of generations
-    # population_size = 20  # Population size per generation
-    #run_genetic_algorithm(1000, 100)
-    teste = geneticAlgorithm(100, 100)
-    # teste = geneticAlgorithm(100, 100, 0.9, 0.05, 0.02)
-    # print(teste)
+    # plt.ion()  # Habilita o modo interativo do grafico
 
-    # print(playGame(teste))
-    # print(playGame([[random.random() for i in range(32)]]))
-    # initial_state = [(15, 250), (18, 350), (20, 450), (1000, 550)]
-    # best_state, best_value = gradient_ascent(initial_state, 5000)
+    teste = geneticAlgorithm(100, 5)
+    atualizar_grafico(5, melhor_resultado, linhas, ax)
+    # plt.ioff()  # Desabilita o modo interativo
+    # plt.show()  # Exibe o gráfico final
+    fig.savefig("melhor_resultado_por_iteracao.png")
+    print("Gráfico salvo como 'melhor_resultado_por_iteracao.png'")
 
-    res, value = manyPlaysResultsTest(30, teste)
-    npRes = np.asarray(res)
-    print(res, npRes.mean(), npRes.std(), value)
+    res = saidaResults(30, teste)
+    best = 0
+    bestScore = 0
+    for i in range(len(teste)):
+        print(f"Individuo {i}: Media: {res[1][i]}, Desvio Padrão: {res[2][i]}")
+        print(res[0][i])
+        # Definindo o melhor como o que tem a maior diferença entre a média e o desvio padrão
+        if res[1][i] - res[2][i] > bestScore:
+            bestScore = res[1][i] - res[2][i]
+            best = i
 
+    print(
+        f"Melhor Individuo: {best}, Media: {res[1][best]}, Desvio Padrão: {res[2][best]}"
+    )
+    print(res[0][best])
+    print(teste[best])
+
+    prof_result = [
+        1214.0,
+        759.5,
+        1164.25,
+        977.25,
+        1201.0,
+        930.0,
+        1427.75,
+        799.5,
+        1006.25,
+        783.5,
+        728.5,
+        419.25,
+        1389.5,
+        730.0,
+        1306.25,
+        675.5,
+        1359.5,
+        1000.25,
+        1284.5,
+        1350.0,
+        751.0,
+        1418.75,
+        1276.5,
+        1645.75,
+        860.0,
+        745.5,
+        1426.25,
+        783.5,
+        1149.75,
+        1482.25,
+    ]
+
+    data = [res[0][best], prof_result]
+    plt.clf()
+    boxplots = sns.boxplot(data)
+    boxplots.set_xticklabels(["Aluno", "Professor"])
+    # plt.show()
+    fig.savefig("boxplot_xprof.png")
+    print("Gráfico salvo como 'boxplot_xprof.png'")
+    
+
+    testes = [[0 for i in range(2)] for j in range(2)]
+
+    for i in range(len(data)):
+        for j in range(i+1, len(data)):
+            testes[i][j] = stats.ttest_ind(data[i], data[j])[1]
+    
+    for i in range(len(data)):
+        for j in range(i):
+            testes[i][j] = stats.wilcoxon(data[i], data[j])[1]
+            
+    nomes = ['Aluno', 'Prof']
+
+    for i in range(len(nomes)):
+        testes[i][i] = nomes[i]
+
+    print(testes)
+    testes = pd.DataFrame(testes)
+    print(testes)
+    testes.to_latex("tabela_testes.tex", header=False, index=False)
+
+
+# Inicializar a figura e o eixo do gráfico
+fig, ax = plt.subplots()
+(linhas,) = ax.plot([], [], "b-")  # 'b-' é a cor e o estilo da linha (azul e sólida)
+ax.set_xlabel("Iteração")
+ax.set_ylabel("Melhor Resultado")
+ax.set_title("Melhor Resultado por Iteração")
+melhor_resultado = []
 
 main()
