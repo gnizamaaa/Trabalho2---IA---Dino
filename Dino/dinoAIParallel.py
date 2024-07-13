@@ -564,42 +564,60 @@ def gerarPopulacao(tamPopulacao):
     for _ in range(tamPopulacao):
         individuo = (
             ## Neuronio 1
-            np.random.uniform(-0.3, 0.3, 1).tolist()
-            + np.random.uniform(-0.8, 0.1, 1).tolist()
+            np.random.uniform(-0.4, 0.4, 1).tolist()
+            + np.random.uniform(-0.8, 0.8, 1).tolist()
             + np.random.uniform(-0.1, 0.1, 1).tolist()
-            + np.random.uniform(-1, 0.5, 1).tolist()
+            + np.random.uniform(-1, 1, 1).tolist()
             + np.random.uniform(-0.1, 0.1, 1).tolist()
             + np.random.uniform(-0.1, 0.1, 1).tolist()
             + np.random.uniform(-0.1, 0.1, 1).tolist()
             ## Neuronio 2
-            + np.random.uniform(-0.3, 0.3, 1).tolist()
-            + np.random.uniform(-0.8, 0.1, 1).tolist()
+            + np.random.uniform(-0.4, 0.4, 1).tolist()
+            + np.random.uniform(-0.8, 0.8, 1).tolist()
             + np.random.uniform(-0.1, 0.1, 1).tolist()
-            + np.random.uniform(-1, 0.5, 1).tolist()
+            + np.random.uniform(-1, 1, 1).tolist()
             + np.random.uniform(-0.1, 0.1, 1).tolist()
             + np.random.uniform(-0.1, 0.1, 1).tolist()
             + np.random.uniform(-0.1, 0.1, 1).tolist()
             ## Neuronio 3
-            + np.random.uniform(-0.3, 0.3, 1).tolist()
-            + np.random.uniform(-0.8, 0.1, 1).tolist()
+            + np.random.uniform(-0.4, 0.4, 1).tolist()
+            + np.random.uniform(-0.8, 0.8, 1).tolist()
             + np.random.uniform(-0.1, 0.1, 1).tolist()
-            + np.random.uniform(-1, 0.5, 1).tolist()
+            + np.random.uniform(-1, 1, 1).tolist()
             + np.random.uniform(-0.1, 0.1, 1).tolist()
             + np.random.uniform(-0.1, 0.1, 1).tolist()
             + np.random.uniform(-0.1, 0.1, 1).tolist()
             ## Neuronio 4
-            + np.random.uniform(-0.3, 0.3, 1).tolist()
-            + np.random.uniform(-0.8, 0.1, 1).tolist()
+            + np.random.uniform(-0.4, 0.4, 1).tolist()
+            + np.random.uniform(-0.8, 0.8, 1).tolist()
             + np.random.uniform(-0.1, 0.1, 1).tolist()
-            + np.random.uniform(-1, 0.5, 1).tolist()
+            + np.random.uniform(-1, 1, 1).tolist()
             + np.random.uniform(-0.1, 0.1, 1).tolist()
             + np.random.uniform(-0.1, 0.1, 1).tolist()
             + np.random.uniform(-0.1, 0.1, 1).tolist()
             ## Neuronio 5
-            + np.random.uniform(-0.3, 0.3, 4).tolist()
+            + np.random.uniform(-1, 1, 4).tolist()
         )
         populacao.append(individuo)
     return populacao
+
+
+# def gerarPopulacao(tamPopulacao):
+#     populacao = []
+#     for _ in range(tamPopulacao):
+#         individuo = (
+#             np.random.uniform(-0.5, 0.5, 4).tolist()
+#             + np.random.uniform(-0.15, 0.15, 3).tolist()
+#             + np.random.uniform(-0.5, 0.5, 4).tolist()
+#             + np.random.uniform(-0.15, 0.15, 3).tolist()
+#             + np.random.uniform(-0.5, 0.5, 4).tolist()
+#             + np.random.uniform(-0.15, 0.15, 3).tolist()
+#             + np.random.uniform(-0.5, 0.5, 4).tolist()
+#             + np.random.uniform(-0.15, 0.15, 3).tolist()
+#             + np.random.uniform(-0.5, 0.5, 4).tolist()
+#         )
+#         populacao.append(individuo)
+#     return populacao
 
 
 # def gerarPopulacao(tamPopulacao):
@@ -834,14 +852,16 @@ def evolucao(populacao, fitness, taxaCrossOver=0.6, taxaMutacao=0.1, taxaElitism
     for i in range(0, len(tempPopulacao) - 1, 2):
         pai1 = tempPopulacao[i]
         pai2 = tempPopulacao[i + 1]
-        if random.random() < taxaCrossOver:
+        if i < taxaCrossOver * len(tempPopulacao):
             filho1, filho2 = custom_crossover(pai1, pai2)
         else:
             filho1 = pai1
             filho2 = pai2
-        if random.random() < taxaMutacao:
+        if random.random() < taxaMutacao / 2:
             filho1 = mutacao(filho1)
+        if random.random() < taxaMutacao / 2:
             filho2 = mutacao(filho2)
+
         novaPopulacao.append(filho1)
         novaPopulacao.append(filho2)
 
@@ -866,11 +886,11 @@ def geneticAlgorithm(
 
         if i < 0.25 * numGeracoes:
             taxaCrossOverI = 0.8
-            taxaMutacaoI = 0.2
+            taxaMutacaoI = 0.1
             taxaElitismoI = 0.01
         else:
-            taxaCrossOverI = 0.6
-            taxaMutacaoI = 0.1
+            taxaCrossOverI = 0.7
+            taxaMutacaoI = 0.05
             taxaElitismoI = 0.02
 
         fitness = manyPlaysResultsTrain(3, populacao)
@@ -881,7 +901,7 @@ def geneticAlgorithm(
         end = time.process_time()
         # print(populacao)
         melhor_resultado.append(max(fitness))
-        # atualizar_grafico(i, melhor_resultado, linhas, ax)
+        atualizar_grafico(i, melhor_resultado, linhas, ax)
 
         i += 1
     return populacao
@@ -898,12 +918,12 @@ def manyPlaysResultsTrain(rounds, solutions):
 
     npResults = np.asarray(results)
 
-    # mean_results = np.mean(npResults, axis=0) - np.std(
-    #     npResults, axis=0
-    # )  # axis 0 calcula media da coluna
+    mean_results = np.mean(npResults, axis=0) - np.std(
+        npResults, axis=0
+    )  # axis 0 calcula media da coluna
 
-    # print(max(np.mean(npResults, axis=0)), max(np.std(npResults, axis=0)))
-    mean_results = np.mean(npResults, axis=0)
+    print(max(np.mean(npResults, axis=0)), max(np.std(npResults, axis=0)))
+    #mean_results = np.mean(npResults, axis=0)
     return mean_results
 
 
@@ -934,8 +954,8 @@ def atualizar_grafico(iteracao, melhor_resultado, linhas, eixo):
     linhas.set_ydata(melhor_resultado)
     eixo.relim()
     eixo.autoscale_view()
-    # plt.draw()
-    # plt.pause(0.01)
+    #plt.draw()
+    #plt.pause(0.01)
 
 
 import seaborn as sns
@@ -965,11 +985,11 @@ def corrected_dependent_ttest(data1, data2, n_training_samples, n_test_samples):
 
 def main():
 
-    # plt.ion()  # Habilita o modo interativo do grafico
+    #plt.ion()  # Habilita o modo interativo do grafico
 
     teste = geneticAlgorithm(100, 10000)
     atualizar_grafico(10000, melhor_resultado, linhas, ax)
-    # plt.ioff()  # Desabilita o modo interativo
+    #plt.ioff()  # Desabilita o modo interativo
     # plt.show()  # Exibe o gráfico final
     fig.savefig("melhor_resultado_por_iteracao.png")
     print("Gráfico salvo como 'melhor_resultado_por_iteracao.png'")
