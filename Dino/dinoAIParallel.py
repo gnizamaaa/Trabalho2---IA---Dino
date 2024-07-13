@@ -650,7 +650,9 @@ def custom_crossover(individuo1, individuo2):
 
 def mutacao(individuo):
     i = random.randint(0, len(individuo) - 1)
-    individuo[i] = np.random.uniform(-0.5, 0.5)
+    # Aqui eu nao estou descartando a possibilidade de valor acima de 0.5 porque 
+    # caso esse valor seja ruim, sera descartado na prox iteracao provavelmente
+    individuo[i] = np.random.uniform(-1, 1)
     return individuo
 
 
