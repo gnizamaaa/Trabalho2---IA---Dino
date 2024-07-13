@@ -941,8 +941,8 @@ def main():
 
     # plt.ion()  # Habilita o modo interativo do grafico
 
-    teste = geneticAlgorithm(100, 5)
-    atualizar_grafico(5, melhor_resultado, linhas, ax)
+    teste = geneticAlgorithm(100, 4000)
+    atualizar_grafico(4000, melhor_resultado, linhas, ax)
     # plt.ioff()  # Desabilita o modo interativo
     # plt.show()  # Exibe o gráfico final
     fig.savefig("melhor_resultado_por_iteracao.png")
