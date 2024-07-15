@@ -846,7 +846,7 @@ def evolucao(populacao, fitness, taxaCrossOver=0.6, taxaMutacao=0.1, taxaElitism
     novaPopulacao += elitismo(populacao, fitness, int(len(populacao) * taxaElitismo))
 
     tempPopulacao = torneio_selecao(
-        populacao, fitness, len(populacao) - int(len(novaPopulacao)), 3
+        populacao, fitness, len(populacao) - int(len(novaPopulacao)), 5
     )
 
     for i in range(0, len(tempPopulacao) - 1, 2):
