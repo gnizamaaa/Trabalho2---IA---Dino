@@ -348,16 +348,39 @@ class NeuralNetwork:
         self.weights = state
         self.bias = 1
 
+        # Camada 1: 7 entradas -> 14 neurônios
         self.camada1 = CamadaNeuronio(
             [
                 Neuronio(self.weights[:7], self.bias, relu),
                 Neuronio(self.weights[7:14], self.bias, relu),
                 Neuronio(self.weights[14:21], self.bias, relu),
                 Neuronio(self.weights[21:28], self.bias, relu),
+                Neuronio(self.weights[28:35], self.bias, relu),
+                Neuronio(self.weights[35:42], self.bias, relu),
+                Neuronio(self.weights[42:49], self.bias, relu),
+                Neuronio(self.weights[49:56], self.bias, relu),
+                Neuronio(self.weights[56:63], self.bias, relu),
+                Neuronio(self.weights[63:70], self.bias, relu),
+                Neuronio(self.weights[70:77], self.bias, relu),
+                Neuronio(self.weights[77:84], self.bias, relu),
+                Neuronio(self.weights[84:91], self.bias, relu),
+                Neuronio(self.weights[91:98], self.bias, relu),
             ]
         )
+
+        # Camada 2: 14 entradas -> 4 neurônios
         self.camada2 = CamadaNeuronio(
-            [Neuronio(self.weights[28:32], self.bias, sigmoid)]
+            [
+                Neuronio(self.weights[98:112], self.bias, relu),
+                Neuronio(self.weights[112:126], self.bias, relu),
+                Neuronio(self.weights[126:140], self.bias, relu),
+                Neuronio(self.weights[140:154], self.bias, relu),
+            ]
+        )
+
+        # Camada 3: 4 entradas -> 1 neurônio
+        self.camada3 = CamadaNeuronio(
+            [Neuronio(self.weights[154:158], self.bias, sigmoid)]
         )
 
     def keySelector(
@@ -383,27 +406,28 @@ class NeuralNetwork:
         inputs = fixInput(inputs)
         res1 = self.camada1.forward(inputs)
         res2 = self.camada2.forward(res1)
-        return "K_UP" if res2[0] > 0.55 else "K_DOWN"
+        res3 = self.camada3.forward(res2)
+        return "K_UP" if res3[0] > 0.55 else "K_DOWN"
 
-    def updateState(self, state):
-        self.state = state
-        self.weights = state
-        self.camada1.setWeights(
-            [
-                self.weights[:7],
-                self.weights[7:14],
-                self.weights[14:21],
-                self.weights[21:28],
-            ]
-        )
-        self.camada2.setWeights([self.weights[28:32]])
+    # def updateState(self, state):
+    #     self.state = state
+    #     self.weights = state
+    #     self.camada1.setWeights(
+    #         [
+    #             self.weights[:7],
+    #             self.weights[7:14],
+    #             self.weights[14:21],
+    #             self.weights[21:28],
+    #         ]
+    #     )
+    #     self.camada2.setWeights([self.weights[28:32]])
 
-    def setWeights(self, weights):
-        self.weights = weights
-        self.camada1.setWeights(
-            [weights[:7], weights[7:14], weights[14:21], weights[21:28]]
-        )
-        self.camada2.setWeights([weights[28:32]])
+    # def setWeights(self, weights):
+    #     self.weights = weights
+    #     self.camada1.setWeights(
+    #         [weights[:7], weights[7:14], weights[14:21], weights[21:28]]
+    #     )
+    #     self.camada2.setWeights([weights[28:32]])
 
 
 def playerKeySelector():
@@ -564,39 +588,7 @@ def gerarPopulacao(tamPopulacao):
     for _ in range(tamPopulacao):
         individuo = (
             ## Neuronio 1
-            np.random.uniform(-0.4, 0.4, 1).tolist()
-            + np.random.uniform(-0.8, 0.8, 1).tolist()
-            + np.random.uniform(-0.1, 0.1, 1).tolist()
-            + np.random.uniform(-1, 1, 1).tolist()
-            + np.random.uniform(-0.1, 0.1, 1).tolist()
-            + np.random.uniform(-0.1, 0.1, 1).tolist()
-            + np.random.uniform(-0.1, 0.1, 1).tolist()
-            ## Neuronio 2
-            + np.random.uniform(-0.4, 0.4, 1).tolist()
-            + np.random.uniform(-0.8, 0.8, 1).tolist()
-            + np.random.uniform(-0.1, 0.1, 1).tolist()
-            + np.random.uniform(-1, 1, 1).tolist()
-            + np.random.uniform(-0.1, 0.1, 1).tolist()
-            + np.random.uniform(-0.1, 0.1, 1).tolist()
-            + np.random.uniform(-0.1, 0.1, 1).tolist()
-            ## Neuronio 3
-            + np.random.uniform(-0.4, 0.4, 1).tolist()
-            + np.random.uniform(-0.8, 0.8, 1).tolist()
-            + np.random.uniform(-0.1, 0.1, 1).tolist()
-            + np.random.uniform(-1, 1, 1).tolist()
-            + np.random.uniform(-0.1, 0.1, 1).tolist()
-            + np.random.uniform(-0.1, 0.1, 1).tolist()
-            + np.random.uniform(-0.1, 0.1, 1).tolist()
-            ## Neuronio 4
-            + np.random.uniform(-0.4, 0.4, 1).tolist()
-            + np.random.uniform(-0.8, 0.8, 1).tolist()
-            + np.random.uniform(-0.1, 0.1, 1).tolist()
-            + np.random.uniform(-1, 1, 1).tolist()
-            + np.random.uniform(-0.1, 0.1, 1).tolist()
-            + np.random.uniform(-0.1, 0.1, 1).tolist()
-            + np.random.uniform(-0.1, 0.1, 1).tolist()
-            ## Neuronio 5
-            + np.random.uniform(-1, 1, 4).tolist()
+            np.random.uniform(-0.8, 0.8, 159).tolist()
         )
         populacao.append(individuo)
     return populacao
@@ -865,9 +857,10 @@ def evolucao(populacao, fitness, taxaCrossOver=0.6, taxaMutacao=0.1, taxaElitism
         novaPopulacao.append(filho1)
         novaPopulacao.append(filho2)
 
+    # print(len(novaPopulacao), len(populacao))
     # Completar a população com indivíduos aleatórios  (Mais uma tentativa de aumentar a diversidade da população)
     while len(novaPopulacao) < len(populacao):
-        novaPopulacao.append(np.random.uniform(-1, 1, 32).tolist())
+        novaPopulacao.append(np.random.uniform(-1, 1, 159).tolist())
     return novaPopulacao
 
 
@@ -894,7 +887,7 @@ def geneticAlgorithm(
             taxaElitismoI = 0.02
 
         fitness = manyPlaysResultsTrain(3, populacao)
-        print(max(fitness), mean(fitness), np.std(fitness))
+        # print(max(fitness), mean(fitness), np.std(fitness))
         populacao = evolucao(
             populacao, fitness, taxaCrossOverI, taxaMutacaoI, taxaElitismoI
         )
@@ -922,7 +915,7 @@ def manyPlaysResultsTrain(rounds, solutions):
         npResults, axis=0
     )  # axis 0 calcula media da coluna
 
-    print(max(np.mean(npResults, axis=0)), max(np.std(npResults, axis=0)))
+    # print(max(np.mean(npResults, axis=0)), max(np.std(npResults, axis=0)))
     # mean_results = np.mean(npResults, axis=0)
     return mean_results
 
@@ -1061,31 +1054,31 @@ def main():
     print(testes)
     testes = pd.DataFrame(testes)
     print(testes)
-    testes.to_latex("tabela_testes.tex", header=False, index=False)
+    testes.to_latex("tabela_testes-mod.tex", header=False, index=False)
 
     atualizar_grafico(500, melhor_resultado, linhas, ax)
     # plt.ioff()  # Desabilita o modo interativo
     # plt.show()  # Exibe o gráfico final
-    fig.savefig("melhor_resultado_por_iteracao - 500.png")
+    fig.savefig("melhor_resultado_por_iteracao - 500-mod.png")
     print("Gráfico salvo como 'melhor_resultado_por_iteracao.png'")
 
     atualizar_grafico(1000, melhor_resultado, linhas, ax)
     # plt.ioff()  # Desabilita o modo interativo
     # plt.show()  # Exibe o gráfico final
-    fig.savefig("melhor_resultado_por_iteracao - 1000.png")
+    fig.savefig("melhor_resultado_por_iteracao - 1000-mod.png")
     print("Gráfico salvo como 'melhor_resultado_por_iteracao.png'")
 
     atualizar_grafico(10000, melhor_resultado, linhas, ax)
     # plt.ioff()  # Desabilita o modo interativo
     # plt.show()  # Exibe o gráfico final
-    fig.savefig("melhor_resultado_por_iteracao.png")
+    fig.savefig("melhor_resultado_por_iteracao-mod.png")
     print("Gráfico salvo como 'melhor_resultado_por_iteracao.png'")
 
     plt.clf()
     boxplots = sns.boxplot(data)
     boxplots.set_xticklabels(["Aluno", "Professor"])
     # plt.show()
-    fig.savefig("boxplot_xprof.png")
+    fig.savefig("boxplot_xprof-mod.png")
     print("Gráfico salvo como 'boxplot_xprof.png'")
 
 
