@@ -559,65 +559,65 @@ def playGame(solutions):
 import numpy as np
 
 
-# def gerarPopulacao(tamPopulacao):
-#     populacao = []
-#     for _ in range(tamPopulacao):
-#         individuo = (
-#             ## Neuronio 1
-#             np.random.uniform(-0.4, 0.4, 1).tolist()
-#             + np.random.uniform(-0.8, 0.8, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-1, 1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             ## Neuronio 2
-#             + np.random.uniform(-0.4, 0.4, 1).tolist()
-#             + np.random.uniform(-0.8, 0.8, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-1, 1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             ## Neuronio 3
-#             + np.random.uniform(-0.4, 0.4, 1).tolist()
-#             + np.random.uniform(-0.8, 0.8, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-1, 1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             ## Neuronio 4
-#             + np.random.uniform(-0.4, 0.4, 1).tolist()
-#             + np.random.uniform(-0.8, 0.8, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-1, 1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             ## Neuronio 5
-#             + np.random.uniform(-1, 1, 4).tolist()
-#         )
-#         populacao.append(individuo)
-#     return populacao
-
-
 def gerarPopulacao(tamPopulacao):
     populacao = []
     for _ in range(tamPopulacao):
         individuo = (
-            np.random.uniform(-0.5, 0.5, 4).tolist()
-            + np.random.uniform(-0.15, 0.15, 3).tolist()
-            + np.random.uniform(-0.5, 0.5, 4).tolist()
-            + np.random.uniform(-0.15, 0.15, 3).tolist()
-            + np.random.uniform(-0.5, 0.5, 4).tolist()
-            + np.random.uniform(-0.15, 0.15, 3).tolist()
-            + np.random.uniform(-0.5, 0.5, 4).tolist()
-            + np.random.uniform(-0.15, 0.15, 3).tolist()
-            + np.random.uniform(-0.5, 0.5, 4).tolist()
+            ## Neuronio 1
+            np.random.uniform(-0.4, 0.4, 1).tolist()
+            + np.random.uniform(-0.8, 0.8, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-1, 1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            ## Neuronio 2
+            + np.random.uniform(-0.4, 0.4, 1).tolist()
+            + np.random.uniform(-0.8, 0.8, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-1, 1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            ## Neuronio 3
+            + np.random.uniform(-0.4, 0.4, 1).tolist()
+            + np.random.uniform(-0.8, 0.8, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-1, 1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            ## Neuronio 4
+            + np.random.uniform(-0.4, 0.4, 1).tolist()
+            + np.random.uniform(-0.8, 0.8, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-1, 1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            + np.random.uniform(-0.1, 0.1, 1).tolist()
+            ## Neuronio 5
+            + np.random.uniform(-1, 1, 4).tolist()
         )
         populacao.append(individuo)
     return populacao
+
+
+# def gerarPopulacao(tamPopulacao):
+#     populacao = []
+#     for _ in range(tamPopulacao):
+#         individuo = (
+#             np.random.uniform(-0.5, 0.5, 4).tolist()
+#             + np.random.uniform(-0.15, 0.15, 3).tolist()
+#             + np.random.uniform(-0.5, 0.5, 4).tolist()
+#             + np.random.uniform(-0.15, 0.15, 3).tolist()
+#             + np.random.uniform(-0.5, 0.5, 4).tolist()
+#             + np.random.uniform(-0.15, 0.15, 3).tolist()
+#             + np.random.uniform(-0.5, 0.5, 4).tolist()
+#             + np.random.uniform(-0.15, 0.15, 3).tolist()
+#             + np.random.uniform(-0.5, 0.5, 4).tolist()
+#         )
+#         populacao.append(individuo)
+#     return populacao
 
 
 # def gerarPopulacao(tamPopulacao):
@@ -1065,26 +1065,26 @@ def main():
     boxplots = sns.boxplot(data)
     boxplots.set_xticklabels(["Aluno", "Professor"])
     # plt.show()
-    fig.savefig("boxplot_xprof - 5050.png")
+    fig.savefig("boxplot_xprof - 7070.png")
     print("Gráfico salvo como 'boxplot_xprof.png'")
     plt.clf()
 
     atualizar_grafico(500, melhor_resultado[:500], linhas, ax)
     # plt.ioff()  # Desabilita o modo interativo
     # plt.show()  # Exibe o gráfico final
-    fig.savefig("melhor_resultado_por_iteracao - 500 - 5050.png")
+    fig.savefig("melhor_resultado_por_iteracao - 500 - 7070.png")
     print("Gráfico salvo como 'melhor_resultado_por_iteracao - 500.png'")
 
     atualizar_grafico(1000, melhor_resultado[:1000], linhas, ax)
     # plt.ioff()  # Desabilita o modo interativo
     # plt.show()  # Exibe o gráfico final
-    fig.savefig("melhor_resultado_por_iteracao - 1000 - 5050.png")
+    fig.savefig("melhor_resultado_por_iteracao - 1000 - 7070.png")
     print("Gráfico salvo como 'melhor_resultado_por_iteracao - 1000.png'")
 
     atualizar_grafico(4000, melhor_resultado, linhas, ax)
     # plt.ioff()  # Desabilita o modo interativo
     # plt.show()  # Exibe o gráfico final
-    fig.savefig("melhor_resultado_por_iteracao - 5050.png")
+    fig.savefig("melhor_resultado_por_iteracao - 7070.png")
     print("Gráfico salvo como 'melhor_resultado_por_iteracao.png'")
 
 

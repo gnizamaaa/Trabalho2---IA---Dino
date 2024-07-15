@@ -987,24 +987,24 @@ def main():
 
     # plt.ion()  # Habilita o modo interativo do grafico
 
-    teste = geneticAlgorithm(100, 4000)
+    #teste = geneticAlgorithm(100, 4000)
 
-    res = saidaResults(30, teste)
-    best = 0
-    bestScore = 0
-    for i in range(len(teste)):
-        print(f"Individuo {i}: Media: {res[1][i]}, Desvio Padrão: {res[2][i]}")
-        print(res[0][i])
-        # Definindo o melhor como o que tem a maior diferença entre a média e o desvio padrão
-        if res[1][i] - res[2][i] > bestScore:
-            bestScore = res[1][i] - res[2][i]
-            best = i
+    # res = saidaResults(30, teste)
+    # best = 0
+    # bestScore = 0
+    # for i in range(len(teste)):
+    #     print(f"Individuo {i}: Media: {res[1][i]}, Desvio Padrão: {res[2][i]}")
+    #     print(res[0][i])
+    #     # Definindo o melhor como o que tem a maior diferença entre a média e o desvio padrão
+    #     if res[1][i] - res[2][i] > bestScore:
+    #         bestScore = res[1][i] - res[2][i]
+    #         best = i
 
-    print(
-        f"Melhor Individuo: {best}, Media: {res[1][best]}, Desvio Padrão: {res[2][best]}"
-    )
-    print(res[0][best])
-    print(teste[best])
+    # print(
+    #     f"Melhor Individuo: {best}, Media: {res[1][best]}, Desvio Padrão: {res[2][best]}"
+    # )
+    # print(res[0][best])
+    # print(teste[best])
 
     prof_result = [
         1214.0,
@@ -1039,7 +1039,13 @@ def main():
         1482.25,
     ]
 
-    data = [res[0][best], prof_result]
+    teste = [[-0.47325589585580685, 0.7575887890090505, 0.7518233326434565, -0.017631548811633424, 0.09544115923985097, 0.8985172956823297, 0.7352210983535599, -0.37411151600441106, 0.476736811609634, -0.5683201192171401, -0.7001060731351889, -0.5028441209739944, 0.883741976040409, -0.7111071385094849, 0.1797540055475395, 0.5986553370494381, 0.6869381061264732, 0.9457016959214131, -0.6438973419488303, 0.08384865765557525, 0.3648846057528268, 0.8131665240889945, 0.9099885161540628, 0.5540021732467215, 0.9733099881037994, 0.334572289992237, 0.8622611015042396, 0.9875924409813941, -0.12823278613819133, 0.9314519899106122, -0.7757290876750726, -0.5040542817773459]]
+
+    res = saidaResults(30, teste)
+    
+    print(res[0][0])
+
+    data = [res[0][0], prof_result]
 
     testes = [[0 for i in range(2)] for j in range(2)]
 
@@ -1059,33 +1065,15 @@ def main():
     print(testes)
     testes = pd.DataFrame(testes)
     print(testes)
-    testes.to_latex("tabela_testes.tex", header=False, index=False)
+    testes.to_latex("tabela_testes - 4k.tex", header=False, index=False)
     
     plt.clf()
     boxplots = sns.boxplot(data)
     boxplots.set_xticklabels(["Aluno", "Professor"])
     # plt.show()
-    fig.savefig("boxplot_xprof - 5050.png")
+    fig.savefig("boxplot_xprof - 4k.png")
     print("Gráfico salvo como 'boxplot_xprof.png'")
     plt.clf()
-
-    atualizar_grafico(500, melhor_resultado[:500], linhas, ax)
-    # plt.ioff()  # Desabilita o modo interativo
-    # plt.show()  # Exibe o gráfico final
-    fig.savefig("melhor_resultado_por_iteracao - 500 - 5050.png")
-    print("Gráfico salvo como 'melhor_resultado_por_iteracao - 500.png'")
-
-    atualizar_grafico(1000, melhor_resultado[:1000], linhas, ax)
-    # plt.ioff()  # Desabilita o modo interativo
-    # plt.show()  # Exibe o gráfico final
-    fig.savefig("melhor_resultado_por_iteracao - 1000 - 5050.png")
-    print("Gráfico salvo como 'melhor_resultado_por_iteracao - 1000.png'")
-
-    atualizar_grafico(4000, melhor_resultado, linhas, ax)
-    # plt.ioff()  # Desabilita o modo interativo
-    # plt.show()  # Exibe o gráfico final
-    fig.savefig("melhor_resultado_por_iteracao - 5050.png")
-    print("Gráfico salvo como 'melhor_resultado_por_iteracao.png'")
 
 
 # Inicializar a figura e o eixo do gráfico

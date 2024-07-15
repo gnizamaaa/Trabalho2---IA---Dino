@@ -348,16 +348,39 @@ class NeuralNetwork:
         self.weights = state
         self.bias = 1
 
+        # Camada 1: 7 entradas -> 14 neurônios
         self.camada1 = CamadaNeuronio(
             [
                 Neuronio(self.weights[:7], self.bias, relu),
                 Neuronio(self.weights[7:14], self.bias, relu),
                 Neuronio(self.weights[14:21], self.bias, relu),
                 Neuronio(self.weights[21:28], self.bias, relu),
+                Neuronio(self.weights[28:35], self.bias, relu),
+                Neuronio(self.weights[35:42], self.bias, relu),
+                Neuronio(self.weights[42:49], self.bias, relu),
+                Neuronio(self.weights[49:56], self.bias, relu),
+                Neuronio(self.weights[56:63], self.bias, relu),
+                Neuronio(self.weights[63:70], self.bias, relu),
+                Neuronio(self.weights[70:77], self.bias, relu),
+                Neuronio(self.weights[77:84], self.bias, relu),
+                Neuronio(self.weights[84:91], self.bias, relu),
+                Neuronio(self.weights[91:98], self.bias, relu),
             ]
         )
+
+        # Camada 2: 14 entradas -> 4 neurônios
         self.camada2 = CamadaNeuronio(
-            [Neuronio(self.weights[28:32], self.bias, sigmoid)]
+            [
+                Neuronio(self.weights[98:112], self.bias, relu),
+                Neuronio(self.weights[112:126], self.bias, relu),
+                Neuronio(self.weights[126:140], self.bias, relu),
+                Neuronio(self.weights[140:154], self.bias, relu),
+            ]
+        )
+
+        # Camada 3: 4 entradas -> 1 neurônio
+        self.camada3 = CamadaNeuronio(
+            [Neuronio(self.weights[154:158], self.bias, sigmoid)]
         )
 
     def keySelector(
@@ -383,27 +406,28 @@ class NeuralNetwork:
         inputs = fixInput(inputs)
         res1 = self.camada1.forward(inputs)
         res2 = self.camada2.forward(res1)
-        return "K_UP" if res2[0] > 0.55 else "K_DOWN"
+        res3 = self.camada3.forward(res2)
+        return "K_UP" if res3[0] > 0.55 else "K_DOWN"
 
-    def updateState(self, state):
-        self.state = state
-        self.weights = state
-        self.camada1.setWeights(
-            [
-                self.weights[:7],
-                self.weights[7:14],
-                self.weights[14:21],
-                self.weights[21:28],
-            ]
-        )
-        self.camada2.setWeights([self.weights[28:32]])
+    # def updateState(self, state):
+    #     self.state = state
+    #     self.weights = state
+    #     self.camada1.setWeights(
+    #         [
+    #             self.weights[:7],
+    #             self.weights[7:14],
+    #             self.weights[14:21],
+    #             self.weights[21:28],
+    #         ]
+    #     )
+    #     self.camada2.setWeights([self.weights[28:32]])
 
-    def setWeights(self, weights):
-        self.weights = weights
-        self.camada1.setWeights(
-            [weights[:7], weights[7:14], weights[14:21], weights[21:28]]
-        )
-        self.camada2.setWeights([weights[28:32]])
+    # def setWeights(self, weights):
+    #     self.weights = weights
+    #     self.camada1.setWeights(
+    #         [weights[:7], weights[7:14], weights[14:21], weights[21:28]]
+    #     )
+    #     self.camada2.setWeights([weights[28:32]])
 
 
 def playerKeySelector():
@@ -559,65 +583,33 @@ def playGame(solutions):
 import numpy as np
 
 
-# def gerarPopulacao(tamPopulacao):
-#     populacao = []
-#     for _ in range(tamPopulacao):
-#         individuo = (
-#             ## Neuronio 1
-#             np.random.uniform(-0.4, 0.4, 1).tolist()
-#             + np.random.uniform(-0.8, 0.8, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-1, 1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             ## Neuronio 2
-#             + np.random.uniform(-0.4, 0.4, 1).tolist()
-#             + np.random.uniform(-0.8, 0.8, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-1, 1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             ## Neuronio 3
-#             + np.random.uniform(-0.4, 0.4, 1).tolist()
-#             + np.random.uniform(-0.8, 0.8, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-1, 1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             ## Neuronio 4
-#             + np.random.uniform(-0.4, 0.4, 1).tolist()
-#             + np.random.uniform(-0.8, 0.8, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-1, 1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             + np.random.uniform(-0.1, 0.1, 1).tolist()
-#             ## Neuronio 5
-#             + np.random.uniform(-1, 1, 4).tolist()
-#         )
-#         populacao.append(individuo)
-#     return populacao
-
-
 def gerarPopulacao(tamPopulacao):
     populacao = []
     for _ in range(tamPopulacao):
         individuo = (
-            np.random.uniform(-0.5, 0.5, 4).tolist()
-            + np.random.uniform(-0.15, 0.15, 3).tolist()
-            + np.random.uniform(-0.5, 0.5, 4).tolist()
-            + np.random.uniform(-0.15, 0.15, 3).tolist()
-            + np.random.uniform(-0.5, 0.5, 4).tolist()
-            + np.random.uniform(-0.15, 0.15, 3).tolist()
-            + np.random.uniform(-0.5, 0.5, 4).tolist()
-            + np.random.uniform(-0.15, 0.15, 3).tolist()
-            + np.random.uniform(-0.5, 0.5, 4).tolist()
+            ## Neuronio 1
+            np.random.uniform(-0.8, 0.8, 159).tolist()
         )
         populacao.append(individuo)
     return populacao
+
+
+# def gerarPopulacao(tamPopulacao):
+#     populacao = []
+#     for _ in range(tamPopulacao):
+#         individuo = (
+#             np.random.uniform(-0.5, 0.5, 4).tolist()
+#             + np.random.uniform(-0.15, 0.15, 3).tolist()
+#             + np.random.uniform(-0.5, 0.5, 4).tolist()
+#             + np.random.uniform(-0.15, 0.15, 3).tolist()
+#             + np.random.uniform(-0.5, 0.5, 4).tolist()
+#             + np.random.uniform(-0.15, 0.15, 3).tolist()
+#             + np.random.uniform(-0.5, 0.5, 4).tolist()
+#             + np.random.uniform(-0.15, 0.15, 3).tolist()
+#             + np.random.uniform(-0.5, 0.5, 4).tolist()
+#         )
+#         populacao.append(individuo)
+#     return populacao
 
 
 # def gerarPopulacao(tamPopulacao):
@@ -865,9 +857,10 @@ def evolucao(populacao, fitness, taxaCrossOver=0.6, taxaMutacao=0.1, taxaElitism
         novaPopulacao.append(filho1)
         novaPopulacao.append(filho2)
 
+    # print(len(novaPopulacao), len(populacao))
     # Completar a população com indivíduos aleatórios  (Mais uma tentativa de aumentar a diversidade da população)
     while len(novaPopulacao) < len(populacao):
-        novaPopulacao.append(np.random.uniform(-1, 1, 32).tolist())
+        novaPopulacao.append(np.random.uniform(-1, 1, 159).tolist())
     return novaPopulacao
 
 
@@ -894,7 +887,7 @@ def geneticAlgorithm(
             taxaElitismoI = 0.02
 
         fitness = manyPlaysResultsTrain(3, populacao)
-        print(max(fitness), mean(fitness), np.std(fitness))
+        # print(max(fitness), mean(fitness), np.std(fitness))
         populacao = evolucao(
             populacao, fitness, taxaCrossOverI, taxaMutacaoI, taxaElitismoI
         )
@@ -922,7 +915,7 @@ def manyPlaysResultsTrain(rounds, solutions):
         npResults, axis=0
     )  # axis 0 calcula media da coluna
 
-    print(max(np.mean(npResults, axis=0)), max(np.std(npResults, axis=0)))
+    # print(max(np.mean(npResults, axis=0)), max(np.std(npResults, axis=0)))
     # mean_results = np.mean(npResults, axis=0)
     return mean_results
 
@@ -949,9 +942,11 @@ import matplotlib.pyplot as plt
 
 
 # Função para atualizar o gráfico
-def atualizar_grafico(iteracao, melhor_resultadoAlt, linhas, eixo):
-    linhas.set_xdata(list(range(len(melhor_resultadoAlt))))
-    linhas.set_ydata(melhor_resultadoAlt)
+def atualizar_grafico(iteracao, melhor_resultado, linhas, eixo):
+    if iteracao > len(melhor_resultado):
+        iteracao = len(melhor_resultado)
+    linhas.set_xdata(list(range(iteracao)))
+    linhas.set_ydata(melhor_resultado)
     eixo.relim()
     eixo.autoscale_view()
     # plt.draw()
@@ -984,27 +979,6 @@ def corrected_dependent_ttest(data1, data2, n_training_samples, n_test_samples):
 
 
 def main():
-
-    # plt.ion()  # Habilita o modo interativo do grafico
-
-    teste = geneticAlgorithm(100, 4000)
-
-    res = saidaResults(30, teste)
-    best = 0
-    bestScore = 0
-    for i in range(len(teste)):
-        print(f"Individuo {i}: Media: {res[1][i]}, Desvio Padrão: {res[2][i]}")
-        print(res[0][i])
-        # Definindo o melhor como o que tem a maior diferença entre a média e o desvio padrão
-        if res[1][i] - res[2][i] > bestScore:
-            bestScore = res[1][i] - res[2][i]
-            best = i
-
-    print(
-        f"Melhor Individuo: {best}, Media: {res[1][best]}, Desvio Padrão: {res[2][best]}"
-    )
-    print(res[0][best])
-    print(teste[best])
 
     prof_result = [
         1214.0,
@@ -1039,7 +1013,13 @@ def main():
         1482.25,
     ]
 
-    data = [res[0][best], prof_result]
+    teste = [[-0.36984411076616336, 0.4517793003057553, -0.9260410211918653, -0.7582335197001739, -0.6973473381118653, -0.30227505157590207, -0.3821179220921611, -0.7908624455847462, -0.8714565307303572, -0.6654061520051763, -0.5329972920997577, 0.23291565646109813, -0.9835965988111317, 0.07112632232713789, 0.7114588736509144, 0.9281744303077968, 0.8506433776616138, 0.7850992109870008, 0.03169152037139855, -0.9386828301800045, 0.4177743531276683, 0.9530321320485509, -0.9082254432379075, -0.6820207102621932, 0.1450383612295949, -0.23028031891399303, 0.9626147486379313, -0.22338572186935102, 0.28526434603974016, 0.12920425953439452, -0.7300107169428547, 0.5544474069705672, 0.626945927772671, -0.16557360243073171, 0.4917431964304346, 0.4886165541138767, 0.12241709748513596, 0.4791942519522083, -0.18452940495653514, 0.09284212223477761, -0.9023864299623447, 0.6452963744298723, -0.0687543292184929, -0.05563827142279121, -0.769319683551016, 0.49764404762456715, 0.407769791958023, -0.8733397105022616, -0.6334203870155521, -0.518888507136916, -0.39753934298638827, 0.9496408993947798, -0.36453715149932775, -0.13305613718892229, 0.20300781618280528, 0.5795298270773706, -0.19124733729015597, 0.7605119852432676, -0.717955657108579, -0.7351842480362285, 0.7406407026518567, 0.42046025207880056, -0.7131201559647093, 0.05336353713449404, -0.8870841160819902, -0.9167327638935419, 0.5089153760931855, -0.6479328919685712, -0.4067741652026149, -0.6192473448379183, -0.07169063202103665, 0.42258425917706477, -0.023125566499857975, 0.23354817960767038, -0.400925538513482, 0.2772911573549417, 0.13700186425260696, -0.7261674257571992, -0.1948664562178748, -0.7559394257513152, -0.34202088660052343, 0.43197965900176594, 0.4383629831048239, 0.9893248762425402, 0.13780125337396976, 0.6257864663928447, -0.9003310556611563, 0.5455935831098253, -0.3796759695091275, -0.21286386787011335, -0.405798060193413, -0.6307625304372357, 0.5567127153677955, -0.21599441247528683, 0.9407988523134352, -0.3410663574637887, -0.015359557655066247, 0.8569141838800673, -0.6669048413979495, -0.4945379864709956, 0.1978978116951835, -0.10555646372589078, 0.742010246097464, -0.09360071395803127, 0.16229447849757805, 0.7118463567243167, -0.3083028410315118, -0.3981806556433101, 0.6770866321578237, -0.48877067224028664, -0.0963608859738736, 0.6584457781190307, 0.05430453021942916, -0.9315517853797182, 0.572920282658625, 0.29349522532617867, -0.6980534578510682, 0.48730508614251633, -0.2730148419309446, -0.6777930269194826, -0.13931687835519901, 0.758489756733213, -0.018066648858588885, 0.4345212019773592, -0.630725711982278, -0.24271081273645234, 0.30963225837088926, -0.5753269717980013, -0.43789467307358304, -0.1000367301130185, -0.7339266312474271, -0.7593680202292221, 0.7547427619524307, 0.5448650337178178, 0.7626347517788028, -0.16267837322087675, -0.1695255852898645, 0.4333208019389718, 0.7987956837620065, -0.19143325766531682, -0.6471761753532901, -0.34580934103818867, -0.4727918384829902, 0.43382184469053, 0.5096354855802145, -0.357665244937494, 0.1802684951875475, -0.04192205365676871, -0.11762754842176704, 0.30524113335973313, -0.6137873195528833, 0.5563064065054466, -0.4562732653157733, -0.44980164586412336, -0.776811539807067, -0.21489730572396826, 0.46797184510302614, -0.10172868829329484, 0.09559929973484604]]
+
+    res = saidaResults(30, teste)
+    
+    print(res[0][0])
+
+    data = [res[0][0], prof_result]
 
     testes = [[0 for i in range(2)] for j in range(2)]
 
@@ -1059,33 +1039,15 @@ def main():
     print(testes)
     testes = pd.DataFrame(testes)
     print(testes)
-    testes.to_latex("tabela_testes.tex", header=False, index=False)
+    testes.to_latex("tabela_testes - Mod.tex", header=False, index=False)
     
     plt.clf()
     boxplots = sns.boxplot(data)
     boxplots.set_xticklabels(["Aluno", "Professor"])
     # plt.show()
-    fig.savefig("boxplot_xprof - 5050.png")
+    fig.savefig("boxplot_xprof - Mod.png")
     print("Gráfico salvo como 'boxplot_xprof.png'")
     plt.clf()
-
-    atualizar_grafico(500, melhor_resultado[:500], linhas, ax)
-    # plt.ioff()  # Desabilita o modo interativo
-    # plt.show()  # Exibe o gráfico final
-    fig.savefig("melhor_resultado_por_iteracao - 500 - 5050.png")
-    print("Gráfico salvo como 'melhor_resultado_por_iteracao - 500.png'")
-
-    atualizar_grafico(1000, melhor_resultado[:1000], linhas, ax)
-    # plt.ioff()  # Desabilita o modo interativo
-    # plt.show()  # Exibe o gráfico final
-    fig.savefig("melhor_resultado_por_iteracao - 1000 - 5050.png")
-    print("Gráfico salvo como 'melhor_resultado_por_iteracao - 1000.png'")
-
-    atualizar_grafico(4000, melhor_resultado, linhas, ax)
-    # plt.ioff()  # Desabilita o modo interativo
-    # plt.show()  # Exibe o gráfico final
-    fig.savefig("melhor_resultado_por_iteracao - 5050.png")
-    print("Gráfico salvo como 'melhor_resultado_por_iteracao.png'")
 
 
 # Inicializar a figura e o eixo do gráfico
