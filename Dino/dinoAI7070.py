@@ -954,7 +954,7 @@ def atualizar_grafico(iteracao, melhor_resultadoAlt, linhas, eixo):
     linhas.set_ydata(melhor_resultadoAlt)
     eixo.relim()
     eixo.autoscale_view()
-    # plt.draw()
+    plt.draw()
     # plt.pause(0.01)
 
 
@@ -987,7 +987,7 @@ def main():
 
     # plt.ion()  # Habilita o modo interativo do grafico
 
-    teste = geneticAlgorithm(100, 4000)
+    teste = geneticAlgorithm(100, 20)
 
     res = saidaResults(30, teste)
     best = 0
@@ -1060,14 +1060,6 @@ def main():
     testes = pd.DataFrame(testes)
     print(testes)
     testes.to_latex("tabela_testes.tex", header=False, index=False)
-    
-    plt.clf()
-    boxplots = sns.boxplot(data)
-    boxplots.set_xticklabels(["Aluno", "Professor"])
-    # plt.show()
-    fig.savefig("boxplot_xprof - 7070.png")
-    print("Gráfico salvo como 'boxplot_xprof.png'")
-    plt.clf()
 
     atualizar_grafico(500, melhor_resultado[:500], linhas, ax)
     # plt.ioff()  # Desabilita o modo interativo
@@ -1086,6 +1078,14 @@ def main():
     # plt.show()  # Exibe o gráfico final
     fig.savefig("melhor_resultado_por_iteracao - 7070.png")
     print("Gráfico salvo como 'melhor_resultado_por_iteracao.png'")
+
+    plt.clf()
+    boxplots = sns.boxplot(data)
+    boxplots.set_xticklabels(["Aluno", "Professor"])
+    # plt.show()
+    fig.savefig("boxplot_xprof - 7070.png")
+    print("Gráfico salvo como 'boxplot_xprof.png'")
+    plt.clf()
 
 
 # Inicializar a figura e o eixo do gráfico

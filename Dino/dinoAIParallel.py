@@ -254,27 +254,6 @@ def first(x):
     return x[0]
 
 
-# def sigmoid(x):
-#     """
-#     Função sigmoide numericamente estável.
-
-#     Args:
-#     x (numpy array): Entrada para a função sigmoide.
-
-#     Returns:
-#     numpy array: Saída da função sigmoide.
-#     """
-#     # Usar a versão numericamente estável da função sigmoide
-#     pos_mask = x >= 0
-#     neg_mask = ~pos_mask
-#     z = np.zeros_like(x)
-#     z[pos_mask] = np.exp(-x[pos_mask])
-#     z[neg_mask] = np.exp(x[neg_mask])
-#     top = np.ones_like(x)
-#     top[neg_mask] = z[neg_mask]
-#     return top / (1 + z)\
-
-
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
@@ -286,6 +265,7 @@ def relu(x):
 from sklearn.preprocessing import normalize
 
 
+# Nessa classe apenas estou fazendo um tratamento da entrada, convertendo os valores discretos de classe em valores numéricos e normalizando a entrada
 def fixInput(inputs):
 
     classes = {
@@ -297,6 +277,7 @@ def fixInput(inputs):
         Obstacle: 6,
     }
 
+    # Fazendo a conversão com base na "tabela" de classes
     for i, inp in enumerate(inputs):
         if i == 3:
             if isinstance(inputs[i], tuple(classes.keys())):
@@ -307,6 +288,7 @@ def fixInput(inputs):
         else:
             inputs[i] = inp
 
+    # Normalizando
     inputs = np.array(inputs) / (np.sum(inputs) + 1e-9)
     # inputs = normalize(inputs)
     return inputs
@@ -341,13 +323,14 @@ class CamadaNeuronio:
             neuronio.setWeights(weights[i])
 
 
-# Classe NeuralNetwork
+# Classe NeuralNetwork em que construi minha rede neural 7x4x1
 class NeuralNetwork:
     def __init__(self, state):
         self.state = state
         self.weights = state
         self.bias = 1
 
+        # Camada 1 com seus 4 neuronios
         self.camada1 = CamadaNeuronio(
             [
                 Neuronio(self.weights[:7], self.bias, relu),
@@ -356,6 +339,8 @@ class NeuralNetwork:
                 Neuronio(self.weights[21:28], self.bias, relu),
             ]
         )
+
+        # Camada de saida
         self.camada2 = CamadaNeuronio(
             [Neuronio(self.weights[28:32], self.bias, sigmoid)]
         )
@@ -558,7 +543,7 @@ def playGame(solutions):
 
 import numpy as np
 
-
+#### FUNÇÕES DE GERAÇÃO DE POPULAÇÃO INICIAL ####
 # def gerarPopulacao(tamPopulacao):
 #     populacao = []
 #     for _ in range(tamPopulacao):
@@ -601,25 +586,6 @@ import numpy as np
 #         populacao.append(individuo)
 #     return populacao
 
-
-def gerarPopulacao(tamPopulacao):
-    populacao = []
-    for _ in range(tamPopulacao):
-        individuo = (
-            np.random.uniform(-0.5, 0.5, 4).tolist()
-            + np.random.uniform(-0.15, 0.15, 3).tolist()
-            + np.random.uniform(-0.5, 0.5, 4).tolist()
-            + np.random.uniform(-0.15, 0.15, 3).tolist()
-            + np.random.uniform(-0.5, 0.5, 4).tolist()
-            + np.random.uniform(-0.15, 0.15, 3).tolist()
-            + np.random.uniform(-0.5, 0.5, 4).tolist()
-            + np.random.uniform(-0.15, 0.15, 3).tolist()
-            + np.random.uniform(-0.5, 0.5, 4).tolist()
-        )
-        populacao.append(individuo)
-    return populacao
-
-
 # def gerarPopulacao(tamPopulacao):
 #     populacao = []
 #     for _ in range(tamPopulacao):
@@ -650,6 +616,29 @@ def gerarPopulacao(tamPopulacao):
 #     return populacao
 
 
+# Aqui eu estou gerando uma população inicial com alguns valores aproximados porque foi um
+# padrão identificado entre as melhores soluções durante o treinamento
+def gerarPopulacao(tamPopulacao):
+    populacao = []
+    for _ in range(tamPopulacao):
+        individuo = (
+            np.random.uniform(-0.5, 0.5, 4).tolist()
+            + np.random.uniform(-0.15, 0.15, 3).tolist()
+            + np.random.uniform(-0.5, 0.5, 4).tolist()
+            + np.random.uniform(-0.15, 0.15, 3).tolist()
+            + np.random.uniform(-0.5, 0.5, 4).tolist()
+            + np.random.uniform(-0.15, 0.15, 3).tolist()
+            + np.random.uniform(-0.5, 0.5, 4).tolist()
+            + np.random.uniform(-0.15, 0.15, 3).tolist()
+            + np.random.uniform(-0.5, 0.5, 4).tolist()
+        )
+        populacao.append(individuo)
+    return populacao
+
+
+#### FUNÇÕES DE GERAÇÃO DE CROSSOVER ####
+
+
 def crossover(individuo1, individuo2, taxaCrossOver=0.6):
     filho = []
     for i in range(len(individuo1)):
@@ -674,9 +663,9 @@ def two_point_crossover(individuo1, individuo2):
     return (filho1, filho2)
 
 
+# Essa foi a função utilizada para crossover, nela o filho resultante
+# tem uma sequencia de genes que alterna o pai que fornece o gene
 def custom_crossover(individuo1, individuo2):
-    # Na minha visão faz sentido fazer um multipoint que tem n pontos de corte
-    # E quero testar essa possibilidade
     filho1 = []
     filho2 = []
     for i in range(len(individuo1)):
@@ -691,42 +680,7 @@ def custom_crossover(individuo1, individuo2):
     return (filho1, filho2)
 
 
-def mutacao(individuo):
-    i = random.randint(0, len(individuo) - 1)
-    # Aqui eu nao estou descartando a possibilidade de valor acima de 0.5 porque
-    # caso esse valor seja ruim, sera descartado na prox iteracao provavelmente
-    individuo[i] = np.random.uniform(-1, 1)
-    return individuo
-
-
-def elitismo(populacao, fitness, numElitismo):
-    """
-    Seleciona os melhores indivíduos da população baseado no fitness.
-
-    Args:
-    populacao (list): Lista de indivíduos na população.
-    fitness (list): Lista de valores de fitness correspondentes aos indivíduos.
-    numElitismo (int): Número de indivíduos a serem selecionados pelo elitismo.
-
-    Returns:
-    list: Lista dos melhores indivíduos.
-    """
-
-    populacao = [
-        x
-        for _, x in sorted(
-            zip(fitness, populacao), key=lambda pair: pair[0], reverse=True
-        )
-    ]
-    return populacao[:numElitismo]
-
-
-def selecao(populacao, fitness):
-    soma = sum(fitness)
-    prob = [f / soma for f in fitness]
-    pai1 = random.choices(populacao, prob)[0]
-    pai2 = random.choices(populacao, prob)[0]
-    return pai1, pai2
+#### FUNÇÕES DE SELEÇÃO ####
 
 
 def torneio_selecao(populacao, fitness, num_selecionados, tamanho_torneio=4):
@@ -788,7 +742,6 @@ def random_selecao(populacao, fitness, num_selecionados):
     return selecionados
 
 
-# Bom também, talvez em par com o rank
 def roulette_wheel_selection(populacao, fitness, num_selecionados):
     """
     Realiza a seleção por roleta.
@@ -840,15 +793,40 @@ def stochastic_universal_sampling(populacao, fitness, num_selecionados):
     return selecionados
 
 
+# Essa função é uma implementação de mutação básica mas que entre as testadas se demonstrou eficaz
+def mutacao(individuo):
+    i = random.randint(0, len(individuo) - 1)
+    individuo[i] = np.random.uniform(-1, 1)
+    # Obs: Aqui eu nao estou descartando a possibilidade de valor acima de 0.5 e/ou seguindo aquele
+    # padrão encontrado entre as melhores soluções porque caso esse valor seja ruim, sera provavelmente
+    # descartado na prox iteracao
+    return individuo
+
+
+# É uma simples e eficaz função de elitismo que seleciona os melhores indivíduos da população,
+# para que sejam mantidos na próxima geração
+def elitismo(populacao, fitness, numElitismo):
+    populacao = [
+        x
+        for _, x in sorted(
+            zip(fitness, populacao), key=lambda pair: pair[0], reverse=True
+        )
+    ]
+    return populacao[:numElitismo]
+
+
 def evolucao(populacao, fitness, taxaCrossOver=0.6, taxaMutacao=0.1, taxaElitismo=0.02):
     novaPopulacao = []
-    # Estudar a possibilidade de elitismo, adicionando duas vezes tentando fazer algo diferente, para que tenham mais influencia na pop grande
+
+    # Adiciona os melhores indivíduos da população atual na nova população
     novaPopulacao += elitismo(populacao, fitness, int(len(populacao) * taxaElitismo))
 
+    # Selecionando os melhores da população
     tempPopulacao = torneio_selecao(
         populacao, fitness, len(populacao) - int(len(novaPopulacao)), 5
     )
 
+    # Aplicando crossover e mutação sob essa nova população (Exceto os selecionados pelo elitismo)
     for i in range(0, len(tempPopulacao) - 1, 2):
         pai1 = tempPopulacao[i]
         pai2 = tempPopulacao[i + 1]
@@ -865,18 +843,21 @@ def evolucao(populacao, fitness, taxaCrossOver=0.6, taxaMutacao=0.1, taxaElitism
         novaPopulacao.append(filho1)
         novaPopulacao.append(filho2)
 
-    # Completar a população com indivíduos aleatórios  (Mais uma tentativa de aumentar a diversidade da população)
+    # Completar a população com indivíduos aleatórios (Mais uma tentativa de aumentar a diversidade da população)
+    # nesse caso sempre 1 indivíduo aleatório
     while len(novaPopulacao) < len(populacao):
         novaPopulacao.append(np.random.uniform(-1, 1, 32).tolist())
+
     return novaPopulacao
 
 
 def geneticAlgorithm(
     tamPopulacao, numGeracoes, taxaCrossOver=0.6, taxaMutacao=0.1, taxaElitismo=0.02
 ):
+    # Geramos a população inicial
     populacao = gerarPopulacao(tamPopulacao)
-    # print(populacao)
 
+    # Iniciamos a contagem do tempo limite de 12h
     start = time.process_time()
     time_max = 60 * 60 * 12
     end = 0
@@ -884,6 +865,7 @@ def geneticAlgorithm(
 
     while i <= numGeracoes and end - start <= time_max:
 
+        # Aqui, nas 25% primeiras gerações, a taxa de crossover e mutação são maiores tentando estimular uma maior diversidade
         if i < 0.25 * numGeracoes:
             taxaCrossOverI = 0.8
             taxaMutacaoI = 0.1
@@ -894,13 +876,14 @@ def geneticAlgorithm(
             taxaElitismoI = 0.02
 
         fitness = manyPlaysResultsTrain(3, populacao)
-        print(max(fitness), mean(fitness), np.std(fitness))
         populacao = evolucao(
             populacao, fitness, taxaCrossOverI, taxaMutacaoI, taxaElitismoI
         )
+
         end = time.process_time()
-        # print(populacao)
         melhor_resultado.append(max(fitness))
+
+        # Utilizado em conjunto com o plt.ion() para atualizar o gráfico de evolução em tempo real
         # atualizar_grafico(i, melhor_resultado, linhas, ax)
 
         i += 1
@@ -948,13 +931,13 @@ def saidaResults(rounds, solutions):
 import matplotlib.pyplot as plt
 
 
-# Função para atualizar o gráfico
+# Função para atualizar o gráfico de evolução
 def atualizar_grafico(iteracao, melhor_resultadoAlt, linhas, eixo):
     linhas.set_xdata(list(range(len(melhor_resultadoAlt))))
     linhas.set_ydata(melhor_resultadoAlt)
     eixo.relim()
     eixo.autoscale_view()
-    # plt.draw()
+    plt.draw()
     # plt.pause(0.01)
 
 
@@ -967,31 +950,19 @@ from scipy import stats
 import pandas as pd
 
 
-def corrected_dependent_ttest(data1, data2, n_training_samples, n_test_samples):
-    n = len(data1)
-    differences = [(data1[i] - data2[i]) for i in range(n)]
-    sd = stdev(differences)
-    divisor = 1 / n * sum(differences)
-    test_training_ratio = n_test_samples / n_training_samples
-    denominator = sqrt(1 / n + test_training_ratio) * sd
-    t_stat = divisor / denominator
-    # degrees of freedom
-    df = n - 1
-    # calculate the p-value
-    p = (1.0 - t.cdf(abs(t_stat), df)) * 2.0
-    # return everything
-    return t_stat, p
-
-
 def main():
 
     # plt.ion()  # Habilita o modo interativo do grafico
 
-    teste = geneticAlgorithm(100, 4000)
+    # Execução do algoritmo genético
+    teste = geneticAlgorithm(100, 1000)
 
+    # Obtenção dos resultados com base na população a ser testada/analisada
     res = saidaResults(30, teste)
     best = 0
     bestScore = 0
+
+    # Impressão da ultima geração, com média e desvio padrão de cada individuo
     for i in range(len(teste)):
         print(f"Individuo {i}: Media: {res[1][i]}, Desvio Padrão: {res[2][i]}")
         print(res[0][i])
@@ -1000,6 +971,7 @@ def main():
             bestScore = res[1][i] - res[2][i]
             best = i
 
+    # Impressão do melhor individuo, sua média, desvio padrão, matriz de pesos e pesos utilizados na rede neural
     print(
         f"Melhor Individuo: {best}, Media: {res[1][best]}, Desvio Padrão: {res[2][best]}"
     )
@@ -1041,6 +1013,7 @@ def main():
 
     data = [res[0][best], prof_result]
 
+    # Testes de hipótese
     testes = [[0 for i in range(2)] for j in range(2)]
 
     for i in range(len(data)):
@@ -1059,16 +1032,11 @@ def main():
     print(testes)
     testes = pd.DataFrame(testes)
     print(testes)
-    testes.to_latex("tabela_testes.tex", header=False, index=False)
-    
-    plt.clf()
-    boxplots = sns.boxplot(data)
-    boxplots.set_xticklabels(["Aluno", "Professor"])
-    # plt.show()
-    fig.savefig("boxplot_xprof - 5050.png")
-    print("Gráfico salvo como 'boxplot_xprof.png'")
-    plt.clf()
 
+    # Output da tabela de testes de hipótese para latex
+    testes.to_latex("tabela_testes.tex", header=False, index=False)
+
+    # Plot do gráfico de evolução para que ele seja salvo e analisado posteriormente
     atualizar_grafico(500, melhor_resultado[:500], linhas, ax)
     # plt.ioff()  # Desabilita o modo interativo
     # plt.show()  # Exibe o gráfico final
@@ -1086,6 +1054,15 @@ def main():
     # plt.show()  # Exibe o gráfico final
     fig.savefig("melhor_resultado_por_iteracao - 5050.png")
     print("Gráfico salvo como 'melhor_resultado_por_iteracao.png'")
+
+    # Plot do boxplot comparativo com o resultado obtido pelo professor
+    plt.clf()
+    boxplots = sns.boxplot(data)
+    boxplots.set_xticklabels(["Aluno", "Professor"])
+    # plt.show()
+    fig.savefig("boxplot_xprof - 5050.png")
+    print("Gráfico salvo como 'boxplot_xprof.png'")
+    plt.clf()
 
 
 # Inicializar a figura e o eixo do gráfico
